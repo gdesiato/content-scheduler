@@ -2,7 +2,6 @@ package com.scheduler.content_scheduler.service;
 
 import com.scheduler.content_scheduler.model.ScheduledPost;
 import com.scheduler.content_scheduler.repository.ScheduledPostRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +11,11 @@ import java.util.List;
 @Service
 public class PostService {
 
-    @Autowired
-    private ScheduledPostRepository repository;
+    private final ScheduledPostRepository repository;
+
+    public PostService(ScheduledPostRepository repository) {
+        this.repository = repository;
+    }
 
     public ScheduledPost createPost(ScheduledPost post) {
         post.setPublished(false);

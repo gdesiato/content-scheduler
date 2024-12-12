@@ -2,7 +2,6 @@ package com.scheduler.content_scheduler.controller;
 
 import com.scheduler.content_scheduler.model.ScheduledPost;
 import com.scheduler.content_scheduler.service.PostService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,8 +11,11 @@ import java.util.List;
 @RequestMapping("/api/posts")
 public class PostController {
 
-    @Autowired
-    private PostService postService;
+    private final PostService postService;
+
+    public PostController(PostService postService) {
+        this.postService = postService;
+    }
 
     @PostMapping
     public ResponseEntity<ScheduledPost> schedulePost(@RequestBody ScheduledPost post) {
