@@ -1,12 +1,18 @@
 package com.scheduler.content_scheduler.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
+@RequiredArgsConstructor
 public class ScheduledPost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
