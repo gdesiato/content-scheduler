@@ -1,0 +1,6 @@
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/ContentSchedulerApplication.java
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/controller/PostController.java
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/model/Platform.java
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/model/ScheduledPost.java
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/repository/ScheduledPostRepository.java
+/Users/giuseppedesiato/Documents/content-scheduler/backend/src/main/java/com/scheduler/content_scheduler/service/PostService.java
