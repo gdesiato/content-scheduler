@@ -2,7 +2,6 @@ package com.scheduler.content_scheduler.controller;
 
 import com.scheduler.content_scheduler.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.dto.PostResponseDTO;
-import com.scheduler.content_scheduler.model.Post;
 import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.service.PostService;
 import org.springframework.http.ResponseEntity;
