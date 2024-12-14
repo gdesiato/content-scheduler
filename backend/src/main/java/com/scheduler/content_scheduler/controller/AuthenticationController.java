@@ -1,5 +1,6 @@
-package com.scheduler.content_scheduler.authentication;
+package com.scheduler.content_scheduler.controller;
 
+import com.scheduler.content_scheduler.authentication.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

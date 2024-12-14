@@ -1,5 +1,6 @@
 package com.scheduler.content_scheduler.authentication;
 
+import io.github.cdimascio.dotenv.Dotenv;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
@@ -9,7 +10,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "your-secret-key";
+    private final String SECRET_KEY = Dotenv.load().get("JWT_SECRET_KEY");
 
     public String generateToken(String username) {
         return Jwts.builder()
