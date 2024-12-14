@@ -24,9 +24,8 @@ public class Post {
     private boolean isPublished;
 
     @Enumerated(EnumType.STRING)
-    private PostStatus status; // Differentiates between Scheduled and Posted
+    private PostStatus status;
 
-    // Additional metadata (optional, depending on your needs)
     private LocalDateTime postedTime;
 
     public Long getId() {
