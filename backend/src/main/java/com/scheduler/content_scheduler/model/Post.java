@@ -29,6 +29,18 @@ public class Post {
     // Additional metadata (optional, depending on your needs)
     private LocalDateTime postedTime;
 
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public boolean isPublished() {
+        return isPublished;
+    }
+
     public void setPublished(boolean published) {
         this.isPublished = published;
     }
