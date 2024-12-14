@@ -1,6 +1,9 @@
 package com.scheduler.content_scheduler.service;
 
+import com.scheduler.content_scheduler.dto.PostRequestDTO;
+import com.scheduler.content_scheduler.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.exception.PostNotFoundException;
+import com.scheduler.content_scheduler.mapper.PostMapper;
 import com.scheduler.content_scheduler.model.Post;
 import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.repository.ScheduledPostRepository;
@@ -19,23 +22,34 @@ public class PostService {
         this.repository = repository;
     }
 
-    public Post createPost(Post post) {
+    public PostResponseDTO createPost(PostRequestDTO postRequestDTO) {
+        Post post = PostMapper.toEntity(postRequestDTO);
         post.setPublished(false);
         post.setStatus(PostStatus.SCHEDULED);
-        return repository.save(post);
+
+        Post savedPost = repository.save(post);
+
+        return PostMapper.toDTO(savedPost);
     }
 
-    public List<Post> getAllPosts() {
-        return repository.findAll();
+    public List<PostResponseDTO> getAllPosts() {
+        List<Post> posts = repository.findAll();
+        return posts.stream()
+                .map(PostMapper::toDTO)
+                .toList();
     }
 
-    public List<Post> getPostsByStatus(PostStatus status) {
-        return repository.findByStatus(status);
+    public List<PostResponseDTO> getPostsByStatus(PostStatus status) {
+        List<Post> posts = repository.findByStatus(status);
+        return posts.stream()
+                .map(PostMapper::toDTO)
+                .toList();
     }
 
-    public Post getPostById(Long id) {
-        return repository.findById(id)
+    public PostResponseDTO getPostById(Long id) {
+        Post post = repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
+        return PostMapper.toDTO(post);
     }
 
     public void postToPlatform(Post post) {
@@ -45,15 +59,17 @@ public class PostService {
         repository.save(post);
     }
 
-    public Post updatePostById(Long id, Post updatedPostData) {
+    public PostResponseDTO updatePostById(Long id, PostRequestDTO updatedPostData) {
         Post existingPost = repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
 
-        existingPost.setContent(updatedPostData.getContent());
-        existingPost.setPlatform(updatedPostData.getPlatform());
-        existingPost.setScheduledTime(updatedPostData.getScheduledTime());
+        existingPost.setContent(updatedPostData.content());
+        existingPost.setPlatform(updatedPostData.platform());
+        existingPost.setScheduledTime(updatedPostData.scheduledTime());
 
-        return repository.save(existingPost);
+        Post updatedPost = repository.save(existingPost);
+
+        return PostMapper.toDTO(updatedPost);
     }
 
     public void deletePost(Long id) {
