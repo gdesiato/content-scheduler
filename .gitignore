@@ -12,4 +12,4 @@
 *.log
 
 # Ignore secret key
-backend/main/.env
+backend/src/main/.env
