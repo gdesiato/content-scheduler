@@ -6,11 +6,25 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = Dotenv.load().get("JWT_SECRET_KEY");
+    private final String SECRET_KEY;
+
+    public JwtUtil() {
+        Dotenv dotenv = Dotenv.configure()
+                .directory("backend")
+                .filename("src/main/.env")
+                .load();
+
+        this.SECRET_KEY = dotenv.get("JWT_SECRET_KEY");
+
+        if (this.SECRET_KEY == null || this.SECRET_KEY.isEmpty()) {
+            throw new IllegalArgumentException("JWT_SECRET_KEY is not defined in the .env file");
+        }
+    }
 
     public String generateToken(String username) {
         return Jwts.builder()
@@ -20,6 +34,17 @@ public class JwtUtil {
                 .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes())
                 .compact();
     }
+
+    public String generateTokenWithRoles(String username, List<String> roles) {
+        return Jwts.builder()
+                .setSubject(username)
+                .claim("roles", roles)
+                .setIssuedAt(new Date(System.currentTimeMillis()))
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
+                .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes())
+                .compact();
+    }
+
 
     public String extractUsername(String token) {
         return Jwts.parserBuilder()
@@ -43,6 +68,10 @@ public class JwtUtil {
     public Boolean validateToken(String token, String username) {
         String extractedUsername = extractUsername(token);
         return (extractedUsername.equals(username) && !isTokenExpired(token));
+    }
+
+    public String getSecretKey() {
+        return SECRET_KEY;
     }
 }
 
