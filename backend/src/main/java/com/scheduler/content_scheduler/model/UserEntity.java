@@ -19,6 +19,17 @@ public class UserEntity {
     @Column(nullable = false)
     private String role;
 
+    public UserEntity(){
+        // do nothing
+    }
+
+    public UserEntity(Long id, String username, String password, String role) {
+        this.id = id;
+        this.username = username;
+        this.password = password;
+        this.role = role;
+    }
+
     public Long getId() {
         return id;
     }
@@ -49,4 +60,3 @@ public class UserEntity {
         this.role = role;
     }
 }
-
