@@ -6,7 +6,9 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
@@ -14,9 +16,11 @@ public class JwtUtil {
     private final String SECRET_KEY;
 
     public JwtUtil() {
+        boolean isTest = System.getProperty("env", "").equals("test");
+
         Dotenv dotenv = Dotenv.configure()
-                .directory("backend")
-                .filename("src/main/.env")
+                .directory("")  // Load from classpath root
+                .filename(isTest ? ".env.test" : ".env")
                 .load();
 
         this.SECRET_KEY = dotenv.get("JWT_SECRET_KEY");
@@ -74,4 +78,3 @@ public class JwtUtil {
         return SECRET_KEY;
     }
 }
-
