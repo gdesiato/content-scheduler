@@ -4,6 +4,8 @@ import com.scheduler.content_scheduler.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.service.PostService;
+import com.scheduler.content_scheduler.validator.IdValidator;
+import com.scheduler.content_scheduler.validator.PostRequestValidator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,9 +16,15 @@ import java.util.List;
 public class PostController {
 
     private final PostService postService;
+    private final PostRequestValidator postRequestValidator;
+    private final IdValidator idValidator;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService,
+                          PostRequestValidator postRequestValidator,
+                          IdValidator idValidator) {
         this.postService = postService;
+        this.postRequestValidator = postRequestValidator;
+        this.idValidator = idValidator;
     }
 
     @GetMapping
@@ -27,6 +35,7 @@ public class PostController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
+        idValidator.validate(id);
         PostResponseDTO post = postService.getPostById(id);
         return ResponseEntity.ok(post);
     }
@@ -51,6 +60,7 @@ public class PostController {
 
     @PostMapping
     public ResponseEntity<PostResponseDTO> schedulePost(@RequestBody PostRequestDTO postRequestDTO) {
+        postRequestValidator.validate(postRequestDTO);
         PostResponseDTO post = postService.createPost(postRequestDTO);
         return ResponseEntity.ok(post);
     }
