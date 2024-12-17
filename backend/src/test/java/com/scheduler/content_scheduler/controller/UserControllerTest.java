@@ -17,14 +17,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
+class UserControllerTest {
 
     @Autowired
     public UserRepository userRepository;
-
     @Autowired
     public MockMvc mockMvc;
-
     @Autowired
     public JwtUtil jwtUtil;
 
