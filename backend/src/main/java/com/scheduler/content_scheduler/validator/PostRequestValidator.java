@@ -2,13 +2,11 @@ package com.scheduler.content_scheduler.validator;
 
 import com.scheduler.content_scheduler.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.exception.ErrorMessage;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
-@Slf4j
 @Component
 public class PostRequestValidator extends AbstractValidator<PostRequestDTO> {
 
@@ -29,7 +27,5 @@ public class PostRequestValidator extends AbstractValidator<PostRequestDTO> {
         } else if (postRequestDTO.scheduledTime().isBefore(LocalDateTime.now())) {
             errorMessages.add(new ErrorMessage("Scheduled time must be in the future or present."));
         }
-
-        log.info("Validation completed for PostRequestDTO.");
     }
 }

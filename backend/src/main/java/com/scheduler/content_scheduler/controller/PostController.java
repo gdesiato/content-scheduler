@@ -48,12 +48,15 @@ public class PostController {
 
     @PutMapping("/{id}")
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, PostRequestDTO updatedPostData) {
+        idValidator.validate(id);
+        postRequestValidator.validate(updatedPostData);
         PostResponseDTO post = postService.updatePostById(id, updatedPostData);
         return ResponseEntity.ok(post);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
+        idValidator.validate(id);
         postService.deletePost(id);
         return ResponseEntity.noContent().build();
     }

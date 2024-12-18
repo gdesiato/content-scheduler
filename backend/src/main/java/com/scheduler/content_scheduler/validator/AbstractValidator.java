@@ -1,6 +1,5 @@
 package com.scheduler.content_scheduler.validator;
 
-import com.scheduler.content_scheduler.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.exception.ErrorMessage;
 import com.scheduler.content_scheduler.exception.ValidationException;
 
@@ -19,6 +18,4 @@ public abstract class AbstractValidator<T> {
             throw new ValidationException(errorMessages);
         }
     }
-
-    protected abstract void validate(Long id, List<ErrorMessage> errorMessages);
 }
