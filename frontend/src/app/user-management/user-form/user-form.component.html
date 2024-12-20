@@ -1,0 +1,16 @@
+<div>
+    <h1 *ngIf="userId">Edit User</h1>
+    <h1 *ngIf="!userId">Create User</h1>
+    <form (ngSubmit)="saveUser()">
+      <label>
+        Name:
+        <input [(ngModel)]="user.name" name="name" required />
+      </label>
+      <label>
+        Email:
+        <input [(ngModel)]="user.email" name="email" required />
+      </label>
+      <button type="submit">Save</button>
+    </form>
+  </div>
+  
