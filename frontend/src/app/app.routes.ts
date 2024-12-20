@@ -1,10 +1,9 @@
 import { Routes } from '@angular/router';
-import { UserListComponent } from './user-management/user-list/user-list.component';
-import { UserFormComponent } from './user-management/user-form/user-form.component';
+import { PostListComponent } from './post-management/post-list/post-list.component';
+import { PostFormComponent } from './post-management/post-form/post-form.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'users', pathMatch: 'full' },
-  { path: 'users', component: UserListComponent },
-  { path: 'users/new', component: UserFormComponent },
-  { path: 'users/:id', component: UserFormComponent },
+  { path: 'posts', component: PostListComponent },
+  { path: 'posts/new', component: PostFormComponent },
+  { path: 'posts/:id', component: PostFormComponent },
 ];
