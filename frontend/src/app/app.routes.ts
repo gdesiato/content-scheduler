@@ -1,9 +1,12 @@
 import { Routes } from '@angular/router';
+import { LoginComponent } from './login/login.component';
+import { UserListComponent } from './user-management/user-list/user-list.component';
 import { PostListComponent } from './post-management/post-list/post-list.component';
-import { PostFormComponent } from './post-management/post-form/post-form.component';
+import { AuthGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
-  { path: 'posts', component: PostListComponent },
-  { path: 'posts/new', component: PostFormComponent },
-  { path: 'posts/:id', component: PostFormComponent },
+  { path: 'login', component: LoginComponent }, // Public route
+  { path: 'users', component: UserListComponent, canActivate: [AuthGuard] }, // Protected route
+  { path: 'posts', component: PostListComponent, canActivate: [AuthGuard] }, // Protected route
+  { path: '', redirectTo: 'login', pathMatch: 'full' }, // Redirect to login by default
 ];
