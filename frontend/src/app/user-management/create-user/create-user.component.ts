@@ -20,7 +20,6 @@ export class CreateUserComponent {
 
   createUser() {
     console.log('User Created:', this.user);
-    // Add API call or logic to save the user
   }
 }
 
