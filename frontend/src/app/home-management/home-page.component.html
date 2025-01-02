@@ -1,0 +1,10 @@
+<div *ngIf="homePageData">
+    <h1>{{ homePageData.welcomeMessage }}</h1>
+    <p>Username: {{ homePageData.username }}</p>
+    <p>Roles: <span *ngFor="let role of homePageData.roles">{{ role }}</span></p>
+  </div>
+  
+  <div *ngIf="errorMessage" class="error">
+    {{ errorMessage }}
+  </div>
+  

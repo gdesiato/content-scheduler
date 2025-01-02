@@ -35,6 +35,12 @@ public class UserService {
         return UserMapper.toDTO(user);
     }
 
+    public UserResponseDTO getUserByUsername(String username) {
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("User with username {} not found." + username));
+        return UserMapper.toDTO(user);
+    }
+
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         UserEntity user = UserMapper.toEntity(userRequestDTO);
         UserEntity savedUser = userRepository.save(user);

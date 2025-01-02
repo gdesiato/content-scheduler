@@ -29,6 +29,17 @@ export class AuthService {
     return token ? jwt_decode(token) : null;
   }
 
+  isTokenExpired(token: string): boolean {
+    const decodedToken: any = jwt_decode(token);
+    const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
+    return decodedToken.exp < currentTime; // Check if token is expired
+  }
+
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem('jwtToken'); // Or wherever your token is stored
+    return token !== null && !this.isTokenExpired(token);
+  }
+
   // Check if user is logged in
   isLoggedIn(): boolean {
     const decodedToken = this.decodeToken();
