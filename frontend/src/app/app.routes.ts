@@ -4,7 +4,7 @@ import { UserListComponent } from './user-management/user-list/user-list.compone
 import { CreateUserComponent } from './user-management/create-user/create-user.component';
 import { EditUserComponent } from './user-management/edit-user/edit-user.component';
 import { AuthGuard } from './guards/auth.guard';
-import { HomePageComponent } from './home-management/home-page.component';  // Import your HomePageComponent
+import { HomePageComponent } from './home-management/home-page.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },  // Public route
