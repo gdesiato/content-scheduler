@@ -8,8 +8,8 @@ import jwt_decode from 'jwt-decode';
   providedIn: 'root',
 })
 export class AuthService {
-  private tokenKey = 'token';
-  private apiUrl = 'http://localhost:8080/api/authenticate';
+  private tokenKey = 'jwtToken'; // Key for storing token in localStorage
+  private apiUrl = 'http://localhost:8080/api/authenticate'; // Backend login endpoint
 
   constructor(private http: HttpClient) {}
 
@@ -29,30 +29,30 @@ export class AuthService {
     return token ? jwt_decode(token) : null;
   }
 
-  isTokenExpired(token: string): boolean {
+  // Check if token is expired
+  isTokenExpired(): boolean {
+    const token = this.getToken();
+    if (!token) return true;
+
     const decodedToken: any = jwt_decode(token);
     const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-    return decodedToken.exp < currentTime; // Check if token is expired
+    return decodedToken.exp < currentTime; // Token is expired if current time is greater than exp
   }
 
+  // Check if user is authenticated
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('jwtToken'); // Or wherever your token is stored
-    return token !== null && !this.isTokenExpired(token);
+    return !!this.getToken() && !this.isTokenExpired();
   }
 
-  // Check if user is logged in
+  // Alias for isAuthenticated (optional, for template use)
   isLoggedIn(): boolean {
-    const decodedToken = this.decodeToken();
-    if (!decodedToken) return false;
-
-    const expirationDate = new Date(decodedToken.exp * 1000);
-    return expirationDate > new Date(); // Check token expiration
+    return this.isAuthenticated();
   }
 
-  // Get roles from decoded token
+  // Get user roles from decoded token
   getUserRoles(): string[] {
     const decodedToken = this.decodeToken();
-    return decodedToken?.roles || [];
+    return decodedToken?.roles || []; // Return roles array or empty array if undefined
   }
 
   // Check if user has a specific role
@@ -60,22 +60,22 @@ export class AuthService {
     return this.getUserRoles().includes(role);
   }
 
-  // Logout user and clear token
+  // Logout user by removing token and redirecting to login
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     window.location.href = '/login'; // Redirect to login page
   }
 
-  // Login user and retrieve token
+  // Login user by sending username and password to the backend
   login(username: string, password: string): Observable<string> {
     const body = new HttpParams()
       .set('username', username)
       .set('password', password);
 
     return this.http.post(this.apiUrl, body, {
-      responseType: 'text',
+      responseType: 'text', // Expect a plain text response (JWT token)
       headers: new HttpHeaders({
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded', // URL-encoded form data
       }),
     }).pipe(
       catchError((error) => {

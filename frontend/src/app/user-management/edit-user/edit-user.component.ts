@@ -1,46 +1,38 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { UserService } from '../user.service';
+import { UserRequestDTO } from '../../models/user-request.dto';
 
 @Component({
   selector: 'app-edit-user',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
-  template: `
-    <h2>Edit User</h2>
-    <form (ngSubmit)="updateUser()">
-      <label>
-        Name: <input [(ngModel)]="user.name" name="name" />
-      </label><br />
-      <label>
-        Email: <input [(ngModel)]="user.email" name="email" />
-      </label><br />
-      <button type="submit">Update</button>
-    </form>
-  `,
+  templateUrl: './edit-user.component.html',
+  styleUrls: ['./edit-user.component.css']
 })
 export class EditUserComponent implements OnInit {
-  user = { id: null, name: '', email: '' }; // Initialize user object
+  user: UserRequestDTO = { username: '', email: '', password: '' };
+  errorMessage: string = '';
 
-  constructor(private route: ActivatedRoute) {}
+  constructor(
+    private route: ActivatedRoute,
+    private userService: UserService,
+    private router: Router
+  ) {}
 
-  ngOnInit() {
-    const userId = this.route.snapshot.params['id'];
-    console.log('Editing user with ID:', userId);
-
-    // Fetch the user data based on userId (e.g., from an API or service)
-    // Mocked fetched data for demonstration:
-    this.user = {
-      id: userId,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-    };
+  ngOnInit(): void {
+    const userId = Number(this.route.snapshot.paramMap.get('id'));
+    this.userService.getUserById(userId).subscribe({
+      next: (data) => {
+        this.user = { username: data.username, email: data.email, password: '' };
+      },
+      error: (err) => this.errorMessage = 'Failed to load user data'
+    });
   }
 
-  updateUser() {
-    console.log('Updated User:', this.user);
-    // Add logic to save the updated user (e.g., API call)
+  updateUser(): void {
+    const userId = Number(this.route.snapshot.paramMap.get('id'));
+    this.userService.updateUser(userId, this.user).subscribe({
+      next: () => this.router.navigate(['/users']),
+      error: (err) => this.errorMessage = 'Failed to update user'
+    });
   }
 }
-
