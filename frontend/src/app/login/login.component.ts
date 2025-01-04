@@ -25,15 +25,16 @@ export class LoginComponent {
 
         const roles = this.authService.getUserRoles();
         if (roles.includes('ADMIN')) {
-          this.router.navigate(['/users']);
+          this.router.navigate(['/users']); // Redirect for ADMIN
         } else if (roles.includes('USER')) {
-          this.router.navigate(['/posts']);
+          this.router.navigate(['/home']); // Redirect for USER
         } else {
-          this.router.navigate(['/login']);
+          this.router.navigate(['/login']); // Fallback
         }
       },
       error: () => {
         this.errorMessage = 'Invalid username or password';
+        this.password = ''; // Clear password on error
       },
     });
   }

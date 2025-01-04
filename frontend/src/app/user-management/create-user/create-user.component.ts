@@ -1,25 +1,24 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Import FormsModule for ngModel
+import { Router } from '@angular/router';
+import { UserService } from '../user.service';
+import { UserRequestDTO } from '../../models/user-request.dto';
 
 @Component({
   selector: 'app-create-user',
-  standalone: true,
-  imports: [CommonModule, FormsModule], // Include FormsModule
-  template: `
-    <h2>Create User</h2>
-    <form (ngSubmit)="createUser()">
-      <label>Name: <input [(ngModel)]="user.name" name="name" /></label><br />
-      <label>Email: <input [(ngModel)]="user.email" name="email" /></label><br />
-      <button type="submit">Create</button>
-    </form>
-  `,
+  templateUrl: './create-user.component.html',
+  styleUrls: ['./create-user.component.css']
 })
 export class CreateUserComponent {
-  user = { name: '', email: '' }; // Initialize the user object
+  user: UserRequestDTO = { username: '', email: '', password: '' };
+  errorMessage: string = '';
 
-  createUser() {
-    console.log('User Created:', this.user);
+  constructor(private userService: UserService, private router: Router) {}
+
+  createUser(): void {
+    this.userService.createUser(this.user).subscribe({
+      next: () => this.router.navigate(['/users']),
+      error: (err) => this.errorMessage = 'Failed to create user'
+    });
   }
 }
 
