@@ -1,6 +1,5 @@
-<div>
-  <h1>User Management</h1>
-  <button routerLink="/user/new">Add User</button>
+<div *ngIf="users.length; else noUsers">
+  <h2>User List</h2>
   <table>
     <thead>
       <tr>
@@ -16,10 +15,17 @@
         <td>{{ user.name }}</td>
         <td>{{ user.email }}</td>
         <td>
-          <button [routerLink]="['/user', user.id]">Edit</button>
           <button (click)="deleteUser(user.id)">Delete</button>
         </td>
       </tr>
     </tbody>
   </table>
+</div>
+
+<ng-template #noUsers>
+  <p>No users available.</p>
+</ng-template>
+
+<div *ngIf="errorMessage" class="error">
+  {{ errorMessage }}
 </div>

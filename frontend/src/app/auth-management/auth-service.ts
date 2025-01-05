@@ -52,7 +52,10 @@ export class AuthService {
   // Get user roles from decoded token
   getUserRoles(): string[] {
     const decodedToken = this.decodeToken();
-    return decodedToken?.roles || []; // Return roles array or empty array if undefined
+    const roles = decodedToken?.roles || [];
+    console.log('Decoded token:', decodedToken);
+    console.log('User roles:', roles); 
+    return roles;
   }
 
   // Check if user has a specific role
