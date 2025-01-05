@@ -63,7 +63,7 @@ export class AuthService {
   // Logout user by removing token and redirecting to login
   logout(): void {
     localStorage.removeItem(this.tokenKey);
-    window.location.href = '/login'; // Redirect to login page
+    window.location.href = '/login';
   }
 
   // Login user by sending username and password to the backend
