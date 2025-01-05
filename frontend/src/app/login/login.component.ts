@@ -16,7 +16,7 @@ export class LoginComponent {
   password = '';
   errorMessage = '';
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(public authService: AuthService, private router: Router) {}
 
   login(): void {
     this.authService.login(this.username, this.password).subscribe({
@@ -25,11 +25,11 @@ export class LoginComponent {
 
         const roles = this.authService.getUserRoles();
         if (roles.includes('ADMIN')) {
-          this.router.navigate(['/users']); // Redirect for ADMIN
+          this.router.navigate(['/users']);
         } else if (roles.includes('USER')) {
-          this.router.navigate(['/home']); // Redirect for USER
+          this.router.navigate(['/home']);
         } else {
-          this.router.navigate(['/login']); // Fallback
+          this.router.navigate(['/login']);
         }
       },
       error: () => {
@@ -37,5 +37,9 @@ export class LoginComponent {
         this.password = ''; // Clear password on error
       },
     });
+  }
+
+  logout(): void {
+    this.authService.logout();
   }
 }

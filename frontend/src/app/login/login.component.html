@@ -1,4 +1,4 @@
-<div class="login-container">
+<div class="login-container" *ngIf="!authService.isAuthenticated()">
   <h2>Login</h2>
   <form (ngSubmit)="login()">
     <div>
@@ -22,5 +22,12 @@
     <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
   </form>
 </div>
+
+<div *ngIf="authService.isAuthenticated()">
+  <h2>You are already logged in!</h2>
+  <button (click)="logout()">Logout</button>
+</div>
+
+
 
   

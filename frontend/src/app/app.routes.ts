@@ -12,6 +12,6 @@ export const routes: Routes = [
   { path: 'user/new', component: CreateUserComponent, canActivate: [AuthGuard] },  // Protected route
   { path: 'user/:id', component: EditUserComponent, canActivate: [AuthGuard] },  // Protected route
   { path: 'home', component: HomePageComponent, canActivate: [AuthGuard] },  // Home route
-  { path: '', redirectTo: 'login', pathMatch: 'full' },  // Default route
-  { path: '**', redirectTo: 'login', pathMatch: 'full' },  // Wildcard route
+  { path: '', redirectTo: 'home', pathMatch: 'full' },  // Default route
+  { path: '**', redirectTo: 'home', pathMatch: 'full' },  // Wildcard route
 ];

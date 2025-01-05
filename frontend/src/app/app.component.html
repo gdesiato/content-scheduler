@@ -1,5 +1,7 @@
-<nav *ngIf="authService.isLoggedIn()">
-  <a routerLink="/users">Users</a>
-  <a routerLink="/user/new">Create User</a>
+<nav *ngIf="authService.isAuthenticated()">
+  <a routerLink="/home">Home</a>
+  <a routerLink="/users" *ngIf="authService.getUserRoles().includes('ADMIN')">Users</a>
+  <button (click)="logout()">Logout</button>
 </nav>
+
 <router-outlet></router-outlet>

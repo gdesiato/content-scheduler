@@ -11,4 +11,9 @@ import { AuthService } from './auth-management/auth-service';
 })
 export class AppComponent {
   constructor(public authService: AuthService) {}
+
+  logout(): void {
+    this.authService.logout();
+  }
 }
+

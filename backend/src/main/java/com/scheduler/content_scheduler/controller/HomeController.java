@@ -3,6 +3,8 @@ package com.scheduler.content_scheduler.controller;
 import com.scheduler.content_scheduler.dto.HomePageDataDTO;
 import com.scheduler.content_scheduler.dto.UserResponseDTO;
 import com.scheduler.content_scheduler.service.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -15,6 +17,9 @@ import java.util.List;
 @RequestMapping("/api")
 public class HomeController {
 
+    private static final Logger log = LoggerFactory.getLogger(HomeController.class);
+
+
     private final UserService userService;
 
     public HomeController(UserService userService) {
@@ -24,7 +29,10 @@ public class HomeController {
     @GetMapping("/home")
     public ResponseEntity<HomePageDataDTO> getHomePageData(Principal principal) {
         String username = principal.getName();
+        log.info("Username from Principal: {}", username);
+
         UserResponseDTO user = userService.getUserByUsername(username);
+        log.info("Roles: {}", List.of(user.role()));
 
         List<String> roles = List.of(user.role());
 
