@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 interface HomePageDataDTO {
@@ -9,15 +9,16 @@ interface HomePageDataDTO {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HomeService {
-
   private apiUrl = 'http://localhost:8080/api/home';
 
   constructor(private http: HttpClient) {}
 
   getHomePageData(): Observable<HomePageDataDTO> {
-    return this.http.get<HomePageDataDTO>(this.apiUrl);
+    const token = localStorage.getItem('jwtToken'); // Retrieve token from localStorage
+    const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
+    return this.http.get<HomePageDataDTO>(this.apiUrl, { headers });
   }
 }

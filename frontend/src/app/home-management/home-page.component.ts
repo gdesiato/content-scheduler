@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { HomeService } from './home.service';
 import { AuthService } from '../auth-management/auth-service';
 
 @Component({
   selector: 'app-home-page',
+  standalone: true, // Mark as standalone
+  imports: [CommonModule], // Include CommonModule
   templateUrl: './home-page.component.html',
   styleUrls: ['./home-page.component.css'],
 })

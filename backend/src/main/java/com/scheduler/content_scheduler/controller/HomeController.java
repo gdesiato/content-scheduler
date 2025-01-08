@@ -19,7 +19,6 @@ public class HomeController {
 
     private static final Logger log = LoggerFactory.getLogger(HomeController.class);
 
-
     private final UserService userService;
 
     public HomeController(UserService userService) {
@@ -43,5 +42,4 @@ public class HomeController {
         );
         return ResponseEntity.ok(homePageDataDTO);
     }
-
 }

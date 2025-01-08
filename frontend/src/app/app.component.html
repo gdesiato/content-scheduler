@@ -1,7 +1,7 @@
 <nav *ngIf="authService.isAuthenticated()" class="navbar">
   <a routerLink="/home">Home / </a>
   <a routerLink="/users" *ngIf="authService.getUserRoles().includes('ROLE_ADMIN')">User List / </a>
-  <a routerLink="/users/new" *ngIf="authService.getUserRoles().includes('ROLE_ADMIN')">Create User / </a>
+  <a routerLink="user/new" *ngIf="authService.getUserRoles().includes('ROLE_ADMIN')">Create User / </a>
   <a (click)="logout()" href="#">Logout</a>
 </nav>
 
