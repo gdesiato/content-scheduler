@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
@@ -13,7 +14,7 @@ export class UserListComponent implements OnInit {
   users: any[] = [];
   errorMessage: string | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router: Router) {}
 
   ngOnInit(): void {
     this.fetchUsers(); // Fetch users on component initialization
@@ -47,5 +48,8 @@ export class UserListComponent implements OnInit {
       }
     });
   }
-  
+
+  navigateToEditUser(id: number): void {
+    this.router.navigate([`/user/${id}`]);
+  }
 }
