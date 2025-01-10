@@ -13,7 +13,7 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./create-user.component.css'],
 })
 export class CreateUserComponent {
-  user: UserRequestDTO = { username: '', email: '', password: '' };
+  user: UserRequestDTO = { username: '', password: '' };
   errorMessage: string = '';
 
   constructor(private userService: UserService, private router: Router) {}

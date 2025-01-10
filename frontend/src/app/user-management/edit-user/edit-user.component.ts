@@ -13,7 +13,7 @@ import { UserRequestDTO } from '../../models/user-request.dto';
   styleUrls: ['./edit-user.component.css'],
 })
 export class EditUserComponent implements OnInit {
-  user: UserRequestDTO = { username: '', email: '', password: '' };
+  user: UserRequestDTO = { username: '', password: '' };
   errorMessage: string = '';
   editPassword: boolean = false; // Flag for password update
 
@@ -27,7 +27,7 @@ export class EditUserComponent implements OnInit {
     const userId = Number(this.route.snapshot.paramMap.get('id'));
     this.userService.getUserById(userId).subscribe({
       next: (data) => {
-        this.user = { username: data.username, email: data.email, password: '' };
+        this.user = { username: data.username, password: '' };
       },
       error: (err) => this.errorMessage = 'Failed to load user data'
     });
