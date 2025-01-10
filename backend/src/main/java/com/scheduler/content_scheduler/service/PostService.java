@@ -9,6 +9,9 @@ import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.repository.ScheduledPostRepository;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import twitter4j.Logger;
+import twitter4j.Twitter;
+import twitter4j.TwitterException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,10 +19,14 @@ import java.util.List;
 @Service
 public class PostService {
 
-    private final ScheduledPostRepository repository;
+    private static final Logger log = Logger.getLogger(PostService.class);
 
-    public PostService(ScheduledPostRepository repository) {
+    private final ScheduledPostRepository repository;
+    private final Twitter twitter;
+
+    public PostService(ScheduledPostRepository repository, Twitter twitter) {
         this.repository = repository;
+        this.twitter = twitter;
     }
 
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO) {
@@ -53,10 +60,15 @@ public class PostService {
     }
 
     public void postToPlatform(Post post) {
-        post.setPublished(true);
-        post.setStatus(PostStatus.POSTED);
-        post.setPostedTime(LocalDateTime.now());
-        repository.save(post);
+        try {
+            twitter.updateStatus(post.getContent()); // Post the content as a tweet
+            post.setPublished(true);
+            post.setStatus(PostStatus.POSTED);
+            post.setPostedTime(LocalDateTime.now());
+            repository.save(post);
+        } catch (TwitterException e) {
+            throw new RuntimeException("Failed to post to Twitter: " + e.getMessage(), e);
+        }
     }
 
     public PostResponseDTO updatePostById(Long id, PostRequestDTO updatedPostData) {

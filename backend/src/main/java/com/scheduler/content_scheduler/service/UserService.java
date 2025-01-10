@@ -47,14 +47,9 @@ public class UserService {
 
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         UserEntity user = UserMapper.toEntity(userRequestDTO);
-
-        System.out.println("Password before hashing: " + userRequestDTO.password());
-
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
-        System.out.println("Password after hashing: " + passwordEncoder.encode(userRequestDTO.password()));
-
         UserEntity savedUser = userRepository.save(user);
         return UserMapper.toDTO(savedUser);
     }
