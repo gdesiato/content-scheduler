@@ -2,10 +2,14 @@ package com.scheduler.content_scheduler.controller;
 
 import com.scheduler.content_scheduler.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.dto.PostResponseDTO;
+import com.scheduler.content_scheduler.mapper.PostMapper;
+import com.scheduler.content_scheduler.model.Post;
 import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.service.PostService;
 import com.scheduler.content_scheduler.validator.IdValidator;
 import com.scheduler.content_scheduler.validator.PostRequestValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +18,8 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
+
+    Logger log = LoggerFactory.getLogger(PostController.class);
 
     private final PostService postService;
     private final PostRequestValidator postRequestValidator;
@@ -36,8 +42,10 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
         idValidator.validate(id);
-        PostResponseDTO post = postService.getPostById(id);
-        return ResponseEntity.ok(post);
+        Post post = postService.getPostById(id);
+
+        PostResponseDTO postResponseDTO = PostMapper.toDTO(post);
+        return ResponseEntity.ok(postResponseDTO);
     }
 
     @GetMapping("/{status}")
@@ -66,5 +74,24 @@ public class PostController {
         postRequestValidator.validate(postRequestDTO);
         PostResponseDTO post = postService.createPost(postRequestDTO);
         return ResponseEntity.ok(post);
+    }
+
+    @PostMapping("/publish")
+    public ResponseEntity<PostResponseDTO> createAndPublishPost(@RequestBody PostRequestDTO postRequestDTO) {
+        log.info("Received request to publish post: {}", postRequestDTO);
+
+        // Step 1: Create and save the post
+        PostResponseDTO createdPost = postService.createPost(postRequestDTO);
+        log.info("Post created successfully with ID: {}", createdPost.id());
+
+        // Step 2: Fetch the actual Post entity for publishing
+        Post post = postService.getPostById(createdPost.id());
+
+        // Step 3: Publish the post to the platform
+        postService.postToPlatform(post);
+        log.info("Post published successfully with ID: {}", createdPost.id());
+
+        // Step 4: Return the updated response (optional, if you want the latest state)
+        return ResponseEntity.ok(createdPost);
     }
 }
