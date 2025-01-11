@@ -53,20 +53,27 @@ public class PostService {
                 .toList();
     }
 
-    public PostResponseDTO getPostById(Long id) {
-        Post post = repository.findById(id)
+    public Post getPostById(Long id) {
+        return repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
-        return PostMapper.toDTO(post);
     }
 
     public void postToPlatform(Post post) {
         try {
-            twitter.updateStatus(post.getContent()); // Post the content as a tweet
+            // Post the content to Twitter
+            twitter.updateStatus(post.getContent());
+            log.info("Post published to Twitter successfully with ID: " + post.getId());
+
+            // Update post status
             post.setPublished(true);
             post.setStatus(PostStatus.POSTED);
             post.setPostedTime(LocalDateTime.now());
+
+            // Save updated post in the database
             repository.save(post);
+            log.info("Post status updated in the database for ID: " + post.getId());
         } catch (TwitterException e) {
+            log.error("Failed to post to Twitter for Post ID: {}. Error: " + post.getId() + e.getMessage());
             throw new RuntimeException("Failed to post to Twitter: " + e.getMessage(), e);
         }
     }
