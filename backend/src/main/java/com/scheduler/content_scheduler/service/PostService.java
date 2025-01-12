@@ -64,12 +64,10 @@ public class PostService {
             twitter.updateStatus(post.getContent());
             log.info("Post published to Twitter successfully with ID: " + post.getId());
 
-            // Update post status
             post.setPublished(true);
             post.setStatus(PostStatus.POSTED);
             post.setPostedTime(LocalDateTime.now());
 
-            // Save updated post in the database
             repository.save(post);
             log.info("Post status updated in the database for ID: " + post.getId());
         } catch (TwitterException e) {
