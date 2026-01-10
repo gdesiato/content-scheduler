@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
-
     private final Map<String, OAuthProvider> providers;
     private final AuthStateService authStateService;
     private final UserService userService;
