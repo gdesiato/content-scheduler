@@ -28,7 +28,7 @@ public class AuthenticationController {
         this.customUserDetailsService = customUserDetailsService;
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping("/auth/login")
     public String authenticate(@RequestParam String username, @RequestParam String password) {
         try {
             // Authenticate the user
