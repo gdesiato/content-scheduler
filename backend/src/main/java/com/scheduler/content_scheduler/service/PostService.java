@@ -7,12 +7,14 @@ import com.scheduler.content_scheduler.mapper.PostMapper;
 import com.scheduler.content_scheduler.model.Post;
 import com.scheduler.content_scheduler.model.PostStatus;
 import com.scheduler.content_scheduler.repository.ScheduledPostRepository;
+import io.github.cdimascio.dotenv.Dotenv;
+import okhttp3.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import twitter4j.Logger;
 import twitter4j.Twitter;
-import twitter4j.TwitterException;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -59,22 +61,33 @@ public class PostService {
     }
 
     public void postToPlatform(Post post) {
-        try {
-            // Post the content to Twitter
-            twitter.updateStatus(post.getContent());
-            log.info("Post published to Twitter successfully with ID: " + post.getId());
+        Dotenv dotenv = Dotenv.configure().load();
+        String bearerToken = dotenv.get("TWITTER_BEARER_TOKEN"); // Ensure this is set in .env
 
-            post.setPublished(true);
-            post.setStatus(PostStatus.POSTED);
-            post.setPostedTime(LocalDateTime.now());
+        OkHttpClient client = new OkHttpClient();
+        MediaType mediaType = MediaType.parse("application/json");
 
-            repository.save(post);
-            log.info("Post status updated in the database for ID: " + post.getId());
-        } catch (TwitterException e) {
-            log.error("Failed to post to Twitter for Post ID: {}. Error: " + post.getId() + e.getMessage());
-            throw new RuntimeException("Failed to post to Twitter: " + e.getMessage(), e);
+        String tweetContent = "{\"text\":\"" + post.getContent() + "\"}";
+
+        RequestBody body = RequestBody.create(tweetContent, mediaType);
+
+        Request request = new Request.Builder()
+                .url("https://api.twitter.com/2/tweets")
+                .post(body)
+                .header("Authorization", "Bearer " + bearerToken)
+                .header("Content-Type", "application/json")
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Failed to post tweet: " + response.body().string());
+            }
+            log.info("Tweet posted successfully: {}", response.body().string());
+        } catch (IOException e) {
+            throw new RuntimeException("Error posting tweet", e);
         }
     }
+
 
     public PostResponseDTO updatePostById(Long id, PostRequestDTO updatedPostData) {
         Post existingPost = repository.findById(id)

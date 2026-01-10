@@ -6,32 +6,22 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import twitter4j.*;
-import twitter4j.conf.ConfigurationBuilder;
+import twitter4j.auth.AccessToken;
 
 @Configuration
 public class TwitterConfiguration {
 
     private static final Logger log = LoggerFactory.getLogger(TwitterConfiguration.class);
-
     private final Dotenv dotenv = Dotenv.configure().load();
 
     @Bean
-    public Twitter twitter() {
-        String apiKey = dotenv.get("TWITTER_API_KEY");
-        String apiSecret = dotenv.get("TWITTER_API_SECRET");
-        String accessToken = dotenv.get("TWITTER_ACCESS_TOKEN");
-        String accessSecret = dotenv.get("TWITTER_ACCESS_SECRET");
-
-        log.info("Initializing Twitter with API Key: {}", apiKey);
-
-        ConfigurationBuilder cb = new ConfigurationBuilder();
-        cb.setDebugEnabled(true)
-                .setOAuthConsumerKey(apiKey)
-                .setOAuthConsumerSecret(apiSecret)
-                .setOAuthAccessToken(accessToken)
-                .setOAuthAccessTokenSecret(accessSecret);
-
-        TwitterFactory tf = new TwitterFactory(cb.build());
-        return tf.getInstance();
+    public String bearerToken() {
+        String bearerToken = dotenv.get("TWITTER_BEARER_TOKEN");
+        if (bearerToken == null || bearerToken.isEmpty()) {
+            throw new IllegalArgumentException("TWITTER_BEARER_TOKEN is not set in .env");
+        }
+        log.info("Bearer Token loaded successfully.");
+        return bearerToken;
     }
 }
+
