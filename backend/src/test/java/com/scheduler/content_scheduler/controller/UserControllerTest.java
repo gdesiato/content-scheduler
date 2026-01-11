@@ -1,7 +1,7 @@
 package com.scheduler.content_scheduler.controller;
 
-import com.scheduler.content_scheduler.authentication.JwtUtil;
-import com.scheduler.content_scheduler.repository.UserRepository;
+import com.scheduler.content_scheduler.security.JwtUtil;
+import com.scheduler.content_scheduler.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

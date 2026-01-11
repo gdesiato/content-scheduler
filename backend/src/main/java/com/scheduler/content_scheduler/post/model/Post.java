@@ -1,0 +1,86 @@
+package com.scheduler.content_scheduler.post.model;
+
+import jakarta.persistence.*;
+import lombok.RequiredArgsConstructor;
+import lombok.ToString;
+
+import java.time.LocalDateTime;
+
+@Entity
+@ToString
+@RequiredArgsConstructor
+public class Post {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private String content;
+
+    @Enumerated(EnumType.STRING)
+    private Platform platform;
+
+    private LocalDateTime scheduledTime;
+
+    private boolean isPublished;
+
+    @Enumerated(EnumType.STRING)
+    private PostStatus status;
+
+    private LocalDateTime postedTime;
+
+    public Long getId() {
+        return this.id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public boolean isPublished() {
+        return isPublished;
+    }
+
+    public void setPublished(boolean published) {
+        this.isPublished = published;
+    }
+
+    public Platform getPlatform() {
+        return this.platform;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
+
+    public void setPlatform(Platform platform) {
+        this.platform = platform;
+    }
+
+    public LocalDateTime getScheduledTime() {
+        return scheduledTime;
+    }
+
+    public void setScheduledTime(LocalDateTime scheduledTime) {
+        this.scheduledTime = scheduledTime;
+    }
+
+    public PostStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(PostStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getPostedTime() {
+        return postedTime;
+    }
+
+    public void setPostedTime(LocalDateTime postedTime) {
+        this.postedTime = postedTime;
+    }
+}

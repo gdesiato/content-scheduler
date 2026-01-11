@@ -1,6 +1,6 @@
 package com.scheduler.content_scheduler.validator;
 
-import com.scheduler.content_scheduler.dto.PostRequestDTO;
+import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.exception.ErrorMessage;
 import org.springframework.stereotype.Component;
 
