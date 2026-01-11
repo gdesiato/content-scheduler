@@ -1,5 +1,0 @@
-export interface UserRequestDTO {
-    username: string;
-    password?: string;
-    role?: string;
-  }
