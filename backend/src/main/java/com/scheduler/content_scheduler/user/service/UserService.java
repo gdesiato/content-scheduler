@@ -1,10 +1,13 @@
 package com.scheduler.content_scheduler.user.service;
 
+import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.user.dto.UserRequestDTO;
 import com.scheduler.content_scheduler.user.dto.UserResponseDTO;
 import com.scheduler.content_scheduler.exception.UserNotFoundException;
 import com.scheduler.content_scheduler.user.mapper.UserMapper;
 import com.scheduler.content_scheduler.user.model.UserEntity;
+import com.scheduler.content_scheduler.user.model.UserPlatformToken;
+import com.scheduler.content_scheduler.user.repository.UserPlatformTokenRepository;
 import com.scheduler.content_scheduler.user.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,10 +19,14 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserPlatformTokenRepository userPlatformTokenRepository;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository userRepository,
+                       PasswordEncoder passwordEncoder,
+                       UserPlatformTokenRepository userPlatformTokenRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.userPlatformTokenRepository = userPlatformTokenRepository;
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -73,5 +80,18 @@ public class UserService {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 
         userRepository.delete(existingUser);
+    }
+
+    public UserPlatformToken getUserPlatformToken(
+            UserEntity user,
+            Platform platform
+    ) {
+        return userPlatformTokenRepository
+                .findByUserAndPlatform(user, platform)
+                .orElseThrow(() ->
+                        new IllegalStateException(
+                                "No token for platform " + platform
+                        )
+                );
     }
 }

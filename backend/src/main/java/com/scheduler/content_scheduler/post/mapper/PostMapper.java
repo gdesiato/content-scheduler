@@ -2,12 +2,12 @@ package com.scheduler.content_scheduler.post.mapper;
 
 import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
-import com.scheduler.content_scheduler.post.model.Post;
+import com.scheduler.content_scheduler.post.model.PlatformPost;
 
 public class PostMapper {
 
-    public static Post toEntity(PostRequestDTO dto) {
-        Post post = new Post();
+    public static PlatformPost toEntity(PostRequestDTO dto) {
+        PlatformPost post = new PlatformPost();
         post.setContent(dto.content());
         post.setPlatform(dto.platform());
         post.setScheduledTime(dto.scheduledTime());
@@ -15,7 +15,7 @@ public class PostMapper {
         return post;
     }
 
-    public static PostResponseDTO toDTO(Post post) {
+    public static PostResponseDTO toDTO(PlatformPost post) {
         return new PostResponseDTO(
                 post.getId(),
                 post.getContent(),

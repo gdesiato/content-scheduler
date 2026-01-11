@@ -1,6 +1,7 @@
 package com.scheduler.content_scheduler.user.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.user.model.UserEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,5 +32,17 @@ public class UserTokenService {
                 token.get("access_token").asText(),
                 token.has("refresh_token") ? token.get("refresh_token").asText() : null
         );
+    }
+
+    public String getAccessToken(UserEntity user, Platform platform) {
+        return userService
+                .getPlatformToken(user, platform)
+                .getAccessToken();
+    }
+
+    public String getInstanceUrl(UserEntity user, Platform platform) {
+        return userService
+                .getPlatformToken(user, platform)
+                .getInstanceUrl();
     }
 }

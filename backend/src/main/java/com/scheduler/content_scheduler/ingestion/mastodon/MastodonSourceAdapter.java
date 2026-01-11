@@ -5,7 +5,6 @@ import com.scheduler.content_scheduler.ingestion.SourceAdapter;
 import com.scheduler.content_scheduler.post.model.CanonicalPost;
 import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.user.model.UserEntity;
-import com.scheduler.content_scheduler.source.mastodon.dto.MastodonStatusDto;
 import com.scheduler.content_scheduler.user.service.UserTokenService;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -47,7 +46,7 @@ public class MastodonSourceAdapter implements SourceAdapter {
                 .getAccessToken(user, Platform.MASTODON);
 
         String instanceBaseUrl = userTokenService
-                .getInstanceUrl(user, Platform.MASTODON); // e.g. https://mastodon.social
+                .getInstanceUrl(user, Platform.MASTODON);
 
         String url = instanceBaseUrl + "/api/v1/accounts/verify_credentials";
 
@@ -92,19 +91,19 @@ public class MastodonSourceAdapter implements SourceAdapter {
                 throw new IllegalStateException("Failed to fetch Mastodon statuses");
             }
 
-            MastodonStatusDto[] statuses =
-                    objectMapper.readValue(response.body().string(), MastodonStatusDto[].class);
+            MastodonStatusDTO[] statuses =
+                    objectMapper.readValue(response.body().string(), MastodonStatusDTO[].class);
 
             List<CanonicalPost> result = new ArrayList<>();
 
-            for (MastodonStatusDto status : statuses) {
+            for (MastodonStatusDTO status : statuses) {
 
                 CanonicalPost post = new CanonicalPost(
                         Platform.MASTODON,
-                        status.id,
-                        user.getId(),
-                        stripHtml(status.content),
-                        Instant.parse(status.created_at)
+                        status.id(),
+                        user,
+                        stripHtml(status.content()),
+                        Instant.parse(status.created_at())
                 );
 
                 result.add(post);

@@ -2,5 +2,7 @@ package com.scheduler.content_scheduler.post.model;
 
 public enum Platform {
     TWITTER,
-    LINKEDIN
+    LINKEDIN,
+    MASTODON,
+    THREADS
 }

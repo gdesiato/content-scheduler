@@ -1,5 +1,6 @@
 package com.scheduler.content_scheduler.post.model;
 
+import com.scheduler.content_scheduler.user.model.UserEntity;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.util.UUID;
@@ -37,8 +38,9 @@ public class CanonicalPost {
     /**
      * Internal user who owns this content
      */
-    @Column(name = "author_id", nullable = false, updatable = false)
-    private UUID authorId;
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false, updatable = false)
+    private UserEntity author;
 
     /**
      * Canonical textual content (plain text or lightly normalized HTML)
@@ -59,20 +61,18 @@ public class CanonicalPost {
     @Column(name = "ingested_at", nullable = false, updatable = false)
     private Instant ingestedAt = Instant.now();
 
-    protected CanonicalPost() {
-        // JPA
-    }
+    protected CanonicalPost() {}
 
     public CanonicalPost(
             Platform sourcePlatform,
             String sourcePostId,
-            UUID authorId,
+            UserEntity author,
             String content,
             Instant sourceCreatedAt
     ) {
         this.sourcePlatform = sourcePlatform;
         this.sourcePostId = sourcePostId;
-        this.authorId = authorId;
+        this.author = author;
         this.content = content;
         this.sourceCreatedAt = sourceCreatedAt;
     }
@@ -89,8 +89,8 @@ public class CanonicalPost {
         return sourcePostId;
     }
 
-    public UUID getAuthorId() {
-        return authorId;
+    public UserEntity getAuthor() {
+        return author;
     }
 
     public String getContent() {

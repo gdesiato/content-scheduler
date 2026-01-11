@@ -3,7 +3,7 @@ package com.scheduler.content_scheduler.post.controller;
 import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.post.mapper.PostMapper;
-import com.scheduler.content_scheduler.post.model.Post;
+import com.scheduler.content_scheduler.post.model.PlatformPost;
 import com.scheduler.content_scheduler.post.model.PostStatus;
 import com.scheduler.content_scheduler.post.service.PostService;
 import com.scheduler.content_scheduler.validator.IdValidator;
@@ -42,7 +42,7 @@ public class PostController {
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
         idValidator.validate(id);
-        Post post = postService.getPostById(id);
+        PlatformPost post = postService.getPostById(id);
 
         PostResponseDTO postResponseDTO = PostMapper.toDTO(post);
         return ResponseEntity.ok(postResponseDTO);
@@ -85,7 +85,7 @@ public class PostController {
         log.info("Post created successfully with ID: {}", createdPost.id());
 
         // Step 2: Fetch the actual Post entity for publishing
-        Post post = postService.getPostById(createdPost.id());
+        PlatformPost post = postService.getPostById(createdPost.id());
 
         // Step 3: Publish the post to the platform
         postService.postToPlatform(post);

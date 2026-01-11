@@ -4,9 +4,9 @@ import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.exception.PostNotFoundException;
 import com.scheduler.content_scheduler.post.mapper.PostMapper;
-import com.scheduler.content_scheduler.post.model.Post;
+import com.scheduler.content_scheduler.post.model.PlatformPost;
 import com.scheduler.content_scheduler.post.model.PostStatus;
-import com.scheduler.content_scheduler.post.repository.ScheduledPostRepository;
+import com.scheduler.content_scheduler.post.repository.PlatformPostRepository;
 import io.github.cdimascio.dotenv.Dotenv;
 import okhttp3.*;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -23,44 +23,44 @@ public class PostService {
 
     private static final Logger log = Logger.getLogger(PostService.class);
 
-    private final ScheduledPostRepository repository;
+    private final PlatformPostRepository repository;
     private final Twitter twitter;
 
-    public PostService(ScheduledPostRepository repository, Twitter twitter) {
+    public PostService(PlatformPostRepository repository, Twitter twitter) {
         this.repository = repository;
         this.twitter = twitter;
     }
 
     public PostResponseDTO createPost(PostRequestDTO postRequestDTO) {
-        Post post = PostMapper.toEntity(postRequestDTO);
+        PlatformPost post = PostMapper.toEntity(postRequestDTO);
         post.setPublished(false);
         post.setStatus(PostStatus.SCHEDULED);
 
-        Post savedPost = repository.save(post);
+        PlatformPost savedPost = repository.save(post);
 
         return PostMapper.toDTO(savedPost);
     }
 
     public List<PostResponseDTO> getAllPosts() {
-        List<Post> posts = repository.findAll();
+        List<PlatformPost> posts = repository.findAll();
         return posts.stream()
                 .map(PostMapper::toDTO)
                 .toList();
     }
 
     public List<PostResponseDTO> getPostsByStatus(PostStatus status) {
-        List<Post> posts = repository.findByStatus(status);
+        List<PlatformPost> posts = repository.findByStatus(status);
         return posts.stream()
                 .map(PostMapper::toDTO)
                 .toList();
     }
 
-    public Post getPostById(Long id) {
+    public PlatformPost getPostById(Long id) {
         return repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
     }
 
-    public void postToPlatform(Post post) {
+    public void postToPlatform(PlatformPost post) {
         Dotenv dotenv = Dotenv.configure().load();
         String bearerToken = dotenv.get("TWITTER_BEARER_TOKEN"); // Ensure this is set in .env
 
@@ -90,20 +90,20 @@ public class PostService {
 
 
     public PostResponseDTO updatePostById(Long id, PostRequestDTO updatedPostData) {
-        Post existingPost = repository.findById(id)
+        PlatformPost existingPost = repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
 
         existingPost.setContent(updatedPostData.content());
         existingPost.setPlatform(updatedPostData.platform());
         existingPost.setScheduledTime(updatedPostData.scheduledTime());
 
-        Post updatedPost = repository.save(existingPost);
+        PlatformPost updatedPost = repository.save(existingPost);
 
         return PostMapper.toDTO(updatedPost);
     }
 
     public void deletePost(Long id) {
-        Post existingPost = repository.findById(id)
+        PlatformPost existingPost = repository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
 
         repository.delete(existingPost);
@@ -115,7 +115,7 @@ public class PostService {
      */
     @Scheduled(fixedRate = 60000) // Runs every minute
     public void processScheduledPosts() {
-        List<Post> posts = repository.findByIsPublishedFalseAndScheduledTimeBefore(LocalDateTime.now());
+        List<PlatformPost> posts = repository.findByIsPublishedFalseAndScheduledTimeBefore(LocalDateTime.now());
         posts.forEach(this::postToPlatform);
     }
 }

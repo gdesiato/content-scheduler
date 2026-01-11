@@ -1,6 +1,7 @@
 package com.scheduler.content_scheduler.ingestion;
 
 import com.scheduler.content_scheduler.post.model.CanonicalPost;
+import com.scheduler.content_scheduler.post.repository.CanonicalPostRepository;
 import com.scheduler.content_scheduler.user.model.UserEntity;
 import org.springframework.stereotype.Service;
 

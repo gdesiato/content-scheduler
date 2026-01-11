@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @ToString
 @RequiredArgsConstructor
-public class Post {
+public class PlatformPost {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
