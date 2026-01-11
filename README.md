@@ -1,2 +1,2 @@
 # content-scheduler
-A content scheduling system for LinkedIn and Twitter using Spring Boot and Angular.
+A headless, platform-agnostic cross-posting service that normalizes social media content into a canonical representation and republishes it across multiple platforms.

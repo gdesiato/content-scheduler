@@ -19,14 +19,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class PostService {
+public class PlatformPostService {
 
-    private static final Logger log = Logger.getLogger(PostService.class);
+    private static final Logger log = Logger.getLogger(PlatformPostService.class);
 
     private final PlatformPostRepository repository;
     private final Twitter twitter;
 
-    public PostService(PlatformPostRepository repository, Twitter twitter) {
+    public PlatformPostService(PlatformPostRepository repository, Twitter twitter) {
         this.repository = repository;
         this.twitter = twitter;
     }

@@ -5,7 +5,7 @@ import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.post.mapper.PostMapper;
 import com.scheduler.content_scheduler.post.model.PlatformPost;
 import com.scheduler.content_scheduler.post.model.PostStatus;
-import com.scheduler.content_scheduler.post.service.PostService;
+import com.scheduler.content_scheduler.post.service.PlatformPostService;
 import com.scheduler.content_scheduler.validator.IdValidator;
 import com.scheduler.content_scheduler.validator.PostRequestValidator;
 import org.slf4j.Logger;
@@ -21,28 +21,28 @@ public class PostController {
 
     Logger log = LoggerFactory.getLogger(PostController.class);
 
-    private final PostService postService;
+    private final PlatformPostService platformPostService;
     private final PostRequestValidator postRequestValidator;
     private final IdValidator idValidator;
 
-    public PostController(PostService postService,
+    public PostController(PlatformPostService platformPostService,
                           PostRequestValidator postRequestValidator,
                           IdValidator idValidator) {
-        this.postService = postService;
+        this.platformPostService = platformPostService;
         this.postRequestValidator = postRequestValidator;
         this.idValidator = idValidator;
     }
 
     @GetMapping
     public ResponseEntity<List<PostResponseDTO>> getAllPosts() {
-        List<PostResponseDTO> postList = postService.getAllPosts();
+        List<PostResponseDTO> postList = platformPostService.getAllPosts();
         return ResponseEntity.ok(postList);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<PostResponseDTO> getPostById(@PathVariable Long id) {
         idValidator.validate(id);
-        PlatformPost post = postService.getPostById(id);
+        PlatformPost post = platformPostService.getPostById(id);
 
         PostResponseDTO postResponseDTO = PostMapper.toDTO(post);
         return ResponseEntity.ok(postResponseDTO);
@@ -50,7 +50,7 @@ public class PostController {
 
     @GetMapping("/{status}")
     public ResponseEntity<List<PostResponseDTO>> getPostByStatus(@PathVariable PostStatus status) {
-        List<PostResponseDTO> posts = postService.getPostsByStatus(status);
+        List<PostResponseDTO> posts = platformPostService.getPostsByStatus(status);
         return ResponseEntity.ok(posts);
     }
 
@@ -58,21 +58,21 @@ public class PostController {
     public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, PostRequestDTO updatedPostData) {
         idValidator.validate(id);
         postRequestValidator.validate(updatedPostData);
-        PostResponseDTO post = postService.updatePostById(id, updatedPostData);
+        PostResponseDTO post = platformPostService.updatePostById(id, updatedPostData);
         return ResponseEntity.ok(post);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
         idValidator.validate(id);
-        postService.deletePost(id);
+        platformPostService.deletePost(id);
         return ResponseEntity.noContent().build();
     }
 
     @PostMapping
     public ResponseEntity<PostResponseDTO> schedulePost(@RequestBody PostRequestDTO postRequestDTO) {
         postRequestValidator.validate(postRequestDTO);
-        PostResponseDTO post = postService.createPost(postRequestDTO);
+        PostResponseDTO post = platformPostService.createPost(postRequestDTO);
         return ResponseEntity.ok(post);
     }
 
@@ -81,14 +81,14 @@ public class PostController {
         log.info("Received request to publish post: {}", postRequestDTO);
 
         // Step 1: Create and save the post
-        PostResponseDTO createdPost = postService.createPost(postRequestDTO);
+        PostResponseDTO createdPost = platformPostService.createPost(postRequestDTO);
         log.info("Post created successfully with ID: {}", createdPost.id());
 
         // Step 2: Fetch the actual Post entity for publishing
-        PlatformPost post = postService.getPostById(createdPost.id());
+        PlatformPost post = platformPostService.getPostById(createdPost.id());
 
         // Step 3: Publish the post to the platform
-        postService.postToPlatform(post);
+        platformPostService.postToPlatform(post);
         log.info("Post published successfully with ID: {}", createdPost.id());
 
         // Step 4: Return the updated response (optional, if you want the latest state)
