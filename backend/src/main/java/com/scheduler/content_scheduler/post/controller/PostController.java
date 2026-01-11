@@ -2,6 +2,7 @@ package com.scheduler.content_scheduler.post.controller;
 
 import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
+import com.scheduler.content_scheduler.post.dto.ReschedulePostRequestDTO;
 import com.scheduler.content_scheduler.post.mapper.PostMapper;
 import com.scheduler.content_scheduler.post.model.PlatformPost;
 import com.scheduler.content_scheduler.post.model.PostStatus;
@@ -54,11 +55,12 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @PutMapping("/{id}")
-    public ResponseEntity<PostResponseDTO> updatePost(@PathVariable Long id, PostRequestDTO updatedPostData) {
+    @PatchMapping("/{id}/reschedule")
+    public ResponseEntity<PostResponseDTO> reschedulePost(
+            @PathVariable Long id,
+            @RequestBody ReschedulePostRequestDTO request) {
         idValidator.validate(id);
-        postRequestValidator.validate(updatedPostData);
-        PostResponseDTO post = platformPostService.updatePostById(id, updatedPostData);
+        PostResponseDTO post = platformPostService.reschedule(id, request.scheduledTime());
         return ResponseEntity.ok(post);
     }
 
@@ -70,28 +72,16 @@ public class PostController {
     }
 
     @PostMapping
-    public ResponseEntity<PostResponseDTO> schedulePost(@RequestBody PostRequestDTO postRequestDTO) {
-        postRequestValidator.validate(postRequestDTO);
-        PostResponseDTO post = platformPostService.createPost(postRequestDTO);
+    public ResponseEntity<PostResponseDTO> schedulePost(@RequestBody PostRequestDTO request) {
+        postRequestValidator.validate(request);
+        PostResponseDTO post = platformPostService.schedule(request);
         return ResponseEntity.ok(post);
     }
 
     @PostMapping("/publish")
-    public ResponseEntity<PostResponseDTO> createAndPublishPost(@RequestBody PostRequestDTO postRequestDTO) {
+    public ResponseEntity<PostResponseDTO> publishPost(@RequestBody PostRequestDTO postRequestDTO) {
         log.info("Received request to publish post: {}", postRequestDTO);
-
-        // Step 1: Create and save the post
-        PostResponseDTO createdPost = platformPostService.createPost(postRequestDTO);
-        log.info("Post created successfully with ID: {}", createdPost.id());
-
-        // Step 2: Fetch the actual Post entity for publishing
-        PlatformPost post = platformPostService.getPostById(createdPost.id());
-
-        // Step 3: Publish the post to the platform
-        platformPostService.postToPlatform(post);
-        log.info("Post published successfully with ID: {}", createdPost.id());
-
-        // Step 4: Return the updated response (optional, if you want the latest state)
-        return ResponseEntity.ok(createdPost);
+        PostResponseDTO post = platformPostService.createAndPublish(postRequestDTO);
+        return ResponseEntity.ok(post);
     }
 }

@@ -4,118 +4,148 @@ import com.scheduler.content_scheduler.post.dto.PostRequestDTO;
 import com.scheduler.content_scheduler.post.dto.PostResponseDTO;
 import com.scheduler.content_scheduler.exception.PostNotFoundException;
 import com.scheduler.content_scheduler.post.mapper.PostMapper;
+import com.scheduler.content_scheduler.post.model.CanonicalPost;
+import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.post.model.PlatformPost;
 import com.scheduler.content_scheduler.post.model.PostStatus;
 import com.scheduler.content_scheduler.post.repository.PlatformPostRepository;
-import io.github.cdimascio.dotenv.Dotenv;
-import okhttp3.*;
+import com.scheduler.content_scheduler.publisher.PlatformPublisher;
+import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import twitter4j.Logger;
-import twitter4j.Twitter;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class PlatformPostService {
 
-    private static final Logger log = Logger.getLogger(PlatformPostService.class);
+    private final PlatformPostRepository platformPostRepository;
+    private final CanonicalPostService canonicalPostService;
+    private final Map<Platform, PlatformPublisher> publishers;
 
-    private final PlatformPostRepository repository;
-    private final Twitter twitter;
-
-    public PlatformPostService(PlatformPostRepository repository, Twitter twitter) {
-        this.repository = repository;
-        this.twitter = twitter;
+    public PlatformPostService(
+            PlatformPostRepository platformPostRepository,
+            CanonicalPostService canonicalPostService,
+            List<PlatformPublisher> publishers
+    ) {
+        this.platformPostRepository = platformPostRepository;
+        this.canonicalPostService = canonicalPostService;
+        this.publishers = publishers.stream()
+                .collect(Collectors.toMap(
+                        PlatformPublisher::supports,
+                        Function.identity()
+                ));
     }
 
-    public PostResponseDTO createPost(PostRequestDTO postRequestDTO) {
-        PlatformPost post = PostMapper.toEntity(postRequestDTO);
-        post.setPublished(false);
-        post.setStatus(PostStatus.SCHEDULED);
+    @Transactional
+    public PostResponseDTO createAndPublish(PostRequestDTO postRequestDTO) {
+        CanonicalPost canonical = canonicalPostService.getById(postRequestDTO.canonicalPostId());
 
-        PlatformPost savedPost = repository.save(post);
+        PlatformPost platformPost = new PlatformPost(
+                canonical,
+                postRequestDTO.platform(),
+                postRequestDTO.scheduledTime()
+        );
 
-        return PostMapper.toDTO(savedPost);
+        platformPostRepository.save(platformPost);
+
+        publish(platformPost);
+
+        return PostMapper.toDTO(platformPost);
     }
 
     public List<PostResponseDTO> getAllPosts() {
-        List<PlatformPost> posts = repository.findAll();
+        List<PlatformPost> posts = platformPostRepository.findAll();
         return posts.stream()
                 .map(PostMapper::toDTO)
                 .toList();
     }
 
     public List<PostResponseDTO> getPostsByStatus(PostStatus status) {
-        List<PlatformPost> posts = repository.findByStatus(status);
+        List<PlatformPost> posts = platformPostRepository.findByStatus(status);
         return posts.stream()
                 .map(PostMapper::toDTO)
                 .toList();
     }
 
     public PlatformPost getPostById(Long id) {
-        return repository.findById(id)
+        return platformPostRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
     }
 
-    public void postToPlatform(PlatformPost post) {
-        Dotenv dotenv = Dotenv.configure().load();
-        String bearerToken = dotenv.get("TWITTER_BEARER_TOKEN"); // Ensure this is set in .env
+    @Transactional
+    public void publish(PlatformPost post) {
+        PlatformPublisher publisher = publishers.get(post.getPlatform());
 
-        OkHttpClient client = new OkHttpClient();
-        MediaType mediaType = MediaType.parse("application/json");
-
-        String tweetContent = "{\"text\":\"" + post.getContent() + "\"}";
-
-        RequestBody body = RequestBody.create(tweetContent, mediaType);
-
-        Request request = new Request.Builder()
-                .url("https://api.twitter.com/2/tweets")
-                .post(body)
-                .header("Authorization", "Bearer " + bearerToken)
-                .header("Content-Type", "application/json")
-                .build();
-
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Failed to post tweet: " + response.body().string());
-            }
-            log.info("Tweet posted successfully: {}", response.body().string());
-        } catch (IOException e) {
-            throw new RuntimeException("Error posting tweet", e);
+        if (publisher == null) {
+            throw new IllegalStateException(
+                    "No publisher registered for platform " + post.getPlatform()
+            );
         }
+        publisher.publish(post);
+
+        post.markPublished();
+        platformPostRepository.save(post);
     }
 
+    @Transactional
+    public PostResponseDTO schedule(PostRequestDTO dto) {
+        CanonicalPost canonical = canonicalPostService.getById(dto.canonicalPostId());
 
-    public PostResponseDTO updatePostById(Long id, PostRequestDTO updatedPostData) {
-        PlatformPost existingPost = repository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
+        PlatformPost post = new PlatformPost(
+                canonical,
+                dto.platform(),
+                dto.scheduledTime()
+        );
+        platformPostRepository.save(post);
 
-        existingPost.setContent(updatedPostData.content());
-        existingPost.setPlatform(updatedPostData.platform());
-        existingPost.setScheduledTime(updatedPostData.scheduledTime());
-
-        PlatformPost updatedPost = repository.save(existingPost);
-
-        return PostMapper.toDTO(updatedPost);
+        return PostMapper.toDTO(post);
     }
 
+    @Transactional
+    public PostResponseDTO reschedule(Long id, LocalDateTime newScheduledTime) {
+        PlatformPost post = platformPostRepository.findById(id)
+                .orElseThrow(() ->
+                        new PostNotFoundException("Post with ID " + id + " not found")
+                );
+        if (post.isPublished()) {
+            throw new IllegalStateException(
+                    "Cannot reschedule a published post"
+            );
+        }
+        post.reschedule(newScheduledTime);
+
+        platformPostRepository.save(post);
+
+        return PostMapper.toDTO(post);
+    }
+
+    @Transactional
     public void deletePost(Long id) {
-        PlatformPost existingPost = repository.findById(id)
-                .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
-
-        repository.delete(existingPost);
+        PlatformPost post = platformPostRepository.findById(id)
+                .orElseThrow(() ->
+                        new PostNotFoundException("Post with ID " + id + " not found")
+                );
+        if (post.isPublished()) {
+            throw new IllegalStateException(
+                    "Cannot delete a published post"
+            );
+        }
+        platformPostRepository.delete(post);
     }
 
     /*
      * Process scheduled posts and publish them.
      * This method is triggered automatically at a fixed rate.
      */
-    @Scheduled(fixedRate = 60000) // Runs every minute
+    @Scheduled(fixedRate = 60000)
     public void processScheduledPosts() {
-        List<PlatformPost> posts = repository.findByIsPublishedFalseAndScheduledTimeBefore(LocalDateTime.now());
-        posts.forEach(this::postToPlatform);
+        platformPostRepository
+                .findByIsPublishedFalseAndScheduledTimeBefore(LocalDateTime.now())
+                .forEach(this::publish);
     }
 }

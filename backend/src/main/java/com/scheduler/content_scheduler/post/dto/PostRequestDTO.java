@@ -3,7 +3,10 @@ package com.scheduler.content_scheduler.post.dto;
 import com.scheduler.content_scheduler.post.model.Platform;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-public record PostRequestDTO(String content, Platform platform, LocalDateTime scheduledTime) {
-}
-
+public record PostRequestDTO(
+        UUID canonicalPostId,
+        Platform platform,
+        LocalDateTime scheduledTime
+) {}
