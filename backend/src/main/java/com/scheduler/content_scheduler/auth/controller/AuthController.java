@@ -4,9 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthProvider;
 import com.scheduler.content_scheduler.auth.service.AuthStateService;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthTokenService;
-import com.scheduler.content_scheduler.user.service.UserService;
 import com.scheduler.content_scheduler.user.service.UserTokenService;
-import okhttp3.OkHttpClient;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import com.scheduler.content_scheduler.security.PkceUtil;
@@ -24,8 +22,6 @@ public class AuthController {
 
     private final Map<String, OAuthProvider> providers;
     private final AuthStateService authStateService;
-    private final UserService userService;
-    private final OkHttpClient httpClient;
     private final OAuthTokenService tokenService;
     private final UserTokenService userTokenService;
 
@@ -33,8 +29,6 @@ public class AuthController {
     public AuthController(
             List<OAuthProvider> authProviders,
             AuthStateService authStateService,
-            UserService userService,
-            OkHttpClient httpClient,
             OAuthTokenService tokenService,
             UserTokenService userTokenService
     ) {
@@ -44,8 +38,6 @@ public class AuthController {
                         Function.identity()
                 ));
         this.authStateService = authStateService;
-        this.userService = userService;
-        this.httpClient = httpClient;
         this.tokenService = tokenService;
         this.userTokenService = userTokenService;
     }
