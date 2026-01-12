@@ -15,7 +15,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/auth")
 public class AuthController {

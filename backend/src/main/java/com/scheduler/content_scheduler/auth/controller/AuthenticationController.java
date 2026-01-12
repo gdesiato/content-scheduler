@@ -1,8 +1,12 @@
 package com.scheduler.content_scheduler.auth.controller;
 
+import com.scheduler.content_scheduler.auth.dto.AuthResponseDTO;
+import com.scheduler.content_scheduler.auth.dto.LoginRequestDTO;
 import com.scheduler.content_scheduler.security.JwtUtil;
 import com.scheduler.content_scheduler.security.CustomUserDetailsService;
+import jakarta.validation.Valid;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
@@ -29,21 +33,26 @@ public class AuthenticationController {
     }
 
     @PostMapping("/auth/login")
-    public String authenticate(@RequestParam String username, @RequestParam String password) {
+    public AuthResponseDTO authenticate(@Valid @RequestBody LoginRequestDTO request) {
         try {
-            // Authenticate the user
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, password));
+            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(
+                    request.username(),
+                    request.password()
+                    )
+            );
 
-            // Load user details to fetch roles
-            UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
+            UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.username());
+
             List<String> roles = userDetails.getAuthorities().stream()
                     .map(GrantedAuthority::getAuthority)
                     .toList();
 
-            // Generate JWT with roles
-            return jwtUtil.generateTokenWithRoles(username, roles);
+            String token = jwtUtil.generateTokenWithRoles(request.username(), roles);
+
+            return new AuthResponseDTO(token);
+
         } catch (AuthenticationException e) {
-            throw new RuntimeException("Invalid username or password");
+            throw new BadCredentialsException("Invalid username or password");
         }
     }
 }
