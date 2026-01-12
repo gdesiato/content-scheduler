@@ -2,53 +2,54 @@ package com.scheduler.content_scheduler.publisher;
 
 import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.post.model.PlatformPost;
+import com.scheduler.content_scheduler.user.service.UserTokenService;
+import okhttp3.*;
 import org.springframework.beans.factory.annotation.Value;
-
-import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.RequestBody;
-import okhttp3.Response;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
 @Service
-public class TwitterPublisher implements PlatformPublisher {
+public class MastodonPublisher implements PlatformPublisher {
 
-    private static final Logger log = LoggerFactory.getLogger(TwitterPublisher.class);
+    private static final String STATUSES_ENDPOINT = "/api/v1/statuses";
 
     private final OkHttpClient client;
-    private final String bearerToken;
-    private final String twitterBaseUrl;
+    private final UserTokenService userTokenService;
+    private final String mastodonBaseUrl;
 
-    public TwitterPublisher(
+    public MastodonPublisher(
             OkHttpClient client,
-            @Value("${twitter.bearer-token}") String bearerToken,
-            @Value("${twitter.base-url}") String twitterBaseUrl
+            UserTokenService userTokenService,
+            @Value("${mastodon.base-url}") String mastodonBaseUrl
     ) {
         this.client = client;
-        this.bearerToken = bearerToken;
-        this.twitterBaseUrl = twitterBaseUrl;
+        this.userTokenService = userTokenService;
+        this.mastodonBaseUrl = mastodonBaseUrl;
     }
 
     @Override
     public Platform supports() {
-        return Platform.TWITTER;
+        return Platform.MASTODON;
     }
 
     @Override
     public void publish(PlatformPost post) {
 
+        String accessToken = userTokenService.getAccessToken(
+                post.getCanonicalPost().getAuthor(),
+                Platform.MASTODON
+        );
+
+        if (accessToken == null) {
+            throw new IllegalStateException("No Mastodon access token available");
+        }
+
         String jsonBody = """
                 {
-                  "text": "%s"
+                  "status": "%s"
                 }
-                """.formatted(
-                escape(post.getCanonicalPost().getContent())
-        );
+                """.formatted(escape(post.getCanonicalPost().getContent()));
 
         RequestBody body = RequestBody.create(
                 jsonBody,
@@ -56,23 +57,21 @@ public class TwitterPublisher implements PlatformPublisher {
         );
 
         Request request = new Request.Builder()
-                .url(twitterBaseUrl + "/2/tweets")
+                .url(mastodonBaseUrl + STATUSES_ENDPOINT)
                 .post(body)
-                .header("Authorization", "Bearer " + bearerToken)
+                .header("Authorization", "Bearer " + accessToken)
                 .build();
 
         try (Response response = client.newCall(request).execute()) {
             if (!response.isSuccessful()) {
                 throw new RuntimeException(
-                        "Failed to post tweet: HTTP "
+                        "Mastodon publish failed: HTTP "
                                 + response.code() + " - "
                                 + response.body().string()
                 );
             }
-            log.info("Tweet posted successfully");
-
         } catch (IOException e) {
-            throw new RuntimeException("Error posting tweet", e);
+            throw new RuntimeException("Error publishing to Mastodon", e);
         }
     }
 
@@ -80,3 +79,4 @@ public class TwitterPublisher implements PlatformPublisher {
         return text.replace("\"", "\\\"");
     }
 }
+

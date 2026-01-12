@@ -11,5 +11,5 @@
 # Ignore logs
 *.log
 
-# Ignore secret key
+# Ignore key
 backend/src/main/resources/.env
