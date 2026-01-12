@@ -18,7 +18,7 @@ import java.util.UUID;
 public class CanonicalPost {
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     /**

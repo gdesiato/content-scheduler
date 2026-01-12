@@ -14,7 +14,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -107,7 +107,7 @@ public class PlatformPostService {
     }
 
     @Transactional
-    public PostResponseDTO reschedule(Long id, LocalDateTime newScheduledTime) {
+    public PostResponseDTO reschedule(Long id, Instant newScheduledTime) {
         PlatformPost post = platformPostRepository.findById(id)
                 .orElseThrow(() ->
                         new PostNotFoundException("Post with ID " + id + " not found")
@@ -145,7 +145,7 @@ public class PlatformPostService {
     @Scheduled(fixedRate = 60000)
     public void processScheduledPosts() {
         platformPostRepository
-                .findByIsPublishedFalseAndScheduledTimeBefore(LocalDateTime.now())
+                .findByIsPublishedFalseAndScheduledTimeBefore(Instant.now())
                 .forEach(this::publish);
     }
 }

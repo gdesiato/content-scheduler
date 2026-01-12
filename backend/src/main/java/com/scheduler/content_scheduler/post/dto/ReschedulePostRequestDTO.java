@@ -1,7 +1,7 @@
 package com.scheduler.content_scheduler.post.dto;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record ReschedulePostRequestDTO(
-        LocalDateTime scheduledTime
+        Instant scheduledTime
 ) {}

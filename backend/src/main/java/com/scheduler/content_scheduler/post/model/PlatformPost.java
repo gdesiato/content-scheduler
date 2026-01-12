@@ -2,14 +2,15 @@ package com.scheduler.content_scheduler.post.model;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.util.UUID;
 
 @Entity
 public class PlatformPost {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name = "canonical_post_id", nullable = false)
@@ -19,14 +20,14 @@ public class PlatformPost {
     @Column(nullable = false)
     private Platform platform;
 
-    private LocalDateTime scheduledTime;
+    private Instant scheduledTime;
 
     private boolean published;
 
     @Enumerated(EnumType.STRING)
     private PostStatus status;
 
-    private LocalDateTime postedTime;
+    private Instant postedTime;
 
     protected PlatformPost() {
         // JPA only
@@ -35,7 +36,7 @@ public class PlatformPost {
     public PlatformPost(
             CanonicalPost canonicalPost,
             Platform platform,
-            LocalDateTime scheduledTime
+            Instant scheduledTime
     ) {
         this.canonicalPost = canonicalPost;
         this.platform = platform;
@@ -46,7 +47,7 @@ public class PlatformPost {
 
     // getters only where possible
 
-    public Long getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -58,7 +59,7 @@ public class PlatformPost {
         return platform;
     }
 
-    public LocalDateTime getScheduledTime() {
+    public Instant getScheduledTime() {
         return scheduledTime;
     }
 
@@ -70,7 +71,7 @@ public class PlatformPost {
         return status;
     }
 
-    public LocalDateTime getPostedTime() {
+    public Instant getPostedTime() {
         return postedTime;
     }
 
@@ -82,7 +83,7 @@ public class PlatformPost {
         this.platform = platform;
     }
 
-    public void setScheduledTime(LocalDateTime scheduledTime) {
+    public void setScheduledTime(Instant scheduledTime) {
         this.scheduledTime = scheduledTime;
     }
 
@@ -94,7 +95,7 @@ public class PlatformPost {
         this.status = status;
     }
 
-    public void setPostedTime(LocalDateTime postedTime) {
+    public void setPostedTime(Instant postedTime) {
         this.postedTime = postedTime;
     }
 
@@ -102,18 +103,17 @@ public class PlatformPost {
     public void markPublished() {
         this.published = true;
         this.status = PostStatus.PUBLISHED;
-        this.postedTime = LocalDateTime.now();
+        this.postedTime = Instant.now();
     }
 
     public void markFailed() {
         this.status = PostStatus.FAILED;
     }
 
-    public void reschedule(LocalDateTime newScheduledTime) {
+    public void reschedule(Instant newScheduledTime) {
         if (this.published) {
             throw new IllegalStateException("Cannot reschedule a published post");
         }
         this.scheduledTime = newScheduledTime;
     }
 }
-

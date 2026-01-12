@@ -1,0 +1,10 @@
+spring:
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    schemas: app
+    default-schema: app
+    locations: classpath:db/migration
+  jpa:
+    hibernate:
+      ddl-auto: validate
