@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -72,7 +73,7 @@ public class PlatformPostService {
                 .toList();
     }
 
-    public PlatformPost getPostById(Long id) {
+    public PlatformPost getPostById(UUID id) {
         return platformPostRepository.findById(id)
                 .orElseThrow(() -> new PostNotFoundException("Post with ID " + id + " not found"));
     }
@@ -107,7 +108,7 @@ public class PlatformPostService {
     }
 
     @Transactional
-    public PostResponseDTO reschedule(Long id, Instant newScheduledTime) {
+    public PostResponseDTO reschedule(UUID id, Instant newScheduledTime) {
         PlatformPost post = platformPostRepository.findById(id)
                 .orElseThrow(() ->
                         new PostNotFoundException("Post with ID " + id + " not found")
@@ -125,7 +126,7 @@ public class PlatformPostService {
     }
 
     @Transactional
-    public void deletePost(Long id) {
+    public void deletePost(UUID id) {
         PlatformPost post = platformPostRepository.findById(id)
                 .orElseThrow(() ->
                         new PostNotFoundException("Post with ID " + id + " not found")
@@ -145,7 +146,7 @@ public class PlatformPostService {
     @Scheduled(fixedRate = 60000)
     public void processScheduledPosts() {
         platformPostRepository
-                .findByIsPublishedFalseAndScheduledTimeBefore(Instant.now())
+                .findByPublishedFalseAndScheduledTimeBefore(Instant.now())
                 .forEach(this::publish);
     }
 }

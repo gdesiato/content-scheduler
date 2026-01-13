@@ -45,7 +45,6 @@ public class MastodonOAuthProvider implements OAuthProvider {
     @Override
     public String buildAuthorizationUrl(String state, String codeChallenge) {
         // NOTE: instance URL must be resolved before calling this
-        // e.g. https://mastodon.social
         String instanceBaseUrl = getInstanceBaseUrl();
 
         return UriComponentsBuilder

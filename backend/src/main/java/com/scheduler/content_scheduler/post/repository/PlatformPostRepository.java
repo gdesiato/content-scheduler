@@ -7,9 +7,10 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Repository
-public interface PlatformPostRepository extends JpaRepository<PlatformPost, Long> {
-    List<PlatformPost> findByIsPublishedFalseAndScheduledTimeBefore(Instant time);
+public interface PlatformPostRepository extends JpaRepository<PlatformPost, UUID> {
+    List<PlatformPost> findByPublishedFalseAndScheduledTimeBefore(Instant time);
     List<PlatformPost> findByStatus(PostStatus status);
 }

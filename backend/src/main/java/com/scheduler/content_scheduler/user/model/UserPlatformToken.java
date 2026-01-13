@@ -45,8 +45,6 @@ public class UserPlatformToken {
         this.platform = platform;
     }
 
-    // getters only (no setters for identity)
-
     public UUID getId() {
         return id;
     }
@@ -81,4 +79,3 @@ public class UserPlatformToken {
         this.instanceUrl = instanceUrl;
     }
 }
-

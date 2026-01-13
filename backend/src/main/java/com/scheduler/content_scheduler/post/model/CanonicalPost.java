@@ -43,10 +43,9 @@ public class CanonicalPost {
     private UserEntity author;
 
     /**
-     * Canonical textual content (plain text or lightly normalized HTML)
+     * Canonical textual content
      */
-    @Lob
-    @Column(name = "content", nullable = false)
+    @Column(columnDefinition = "text", nullable = false)
     private String content;
 
     /**
