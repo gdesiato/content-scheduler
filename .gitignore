@@ -12,4 +12,5 @@
 *.log
 
 # Ignore key
+.env
 backend/.env
