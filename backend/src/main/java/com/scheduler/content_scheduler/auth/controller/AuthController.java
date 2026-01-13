@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthProvider;
 import com.scheduler.content_scheduler.auth.service.AuthStateService;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthTokenService;
+import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.user.service.UserTokenService;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
@@ -19,7 +20,7 @@ import java.util.stream.Collectors;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final Map<String, OAuthProvider> providers;
+    private final Map<Platform, OAuthProvider> providers;
     private final AuthStateService authStateService;
     private final OAuthTokenService tokenService;
     private final UserTokenService userTokenService;
@@ -41,7 +42,7 @@ public class AuthController {
         this.userTokenService = userTokenService;
     }
 
-    private OAuthProvider getProvider(String platform) {
+    private OAuthProvider getProvider(Platform platform) {
         OAuthProvider provider = providers.get(platform);
         if (provider == null) {
             throw new IllegalArgumentException("Unsupported platform: " + platform);
@@ -50,7 +51,7 @@ public class AuthController {
     }
 
     @GetMapping("/{platform}/authorize")
-    public RedirectView authorize(@PathVariable String platform) {
+    public RedirectView authorize(@PathVariable Platform platform) {
 
         OAuthProvider provider = getProvider(platform);
 
@@ -71,7 +72,7 @@ public class AuthController {
 
     @GetMapping("/{platform}/callback")
     public String callback(
-            @PathVariable String platform,
+            @PathVariable Platform platform,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String state,
             @RequestParam(required = false) String error
@@ -92,8 +93,10 @@ public class AuthController {
         }
 
         JsonNode token = tokenService.exchangeCode(provider, code, codeVerifier);
+
         userTokenService.persistTokens(platform, token);
 
         return "Authentication successful. You may close this window.";
     }
+
 }

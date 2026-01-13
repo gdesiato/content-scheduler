@@ -9,6 +9,7 @@ import com.scheduler.content_scheduler.user.model.UserEntity;
 import com.scheduler.content_scheduler.user.model.UserPlatformToken;
 import com.scheduler.content_scheduler.user.repository.UserPlatformTokenRepository;
 import com.scheduler.content_scheduler.user.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -48,6 +49,15 @@ public class UserService {
         return UserMapper.toDTO(user);
     }
 
+    public UserEntity findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                String.format("User with username %s not found.", username)
+                        )
+                );
+    }
+
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         UserEntity user = UserMapper.toEntity(userRequestDTO);
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
@@ -82,7 +92,23 @@ public class UserService {
         userRepository.delete(existingUser);
     }
 
-    public UserPlatformToken getUserPlatformToken(
+    @Transactional
+    public void savePlatformToken(
+            UserEntity user,
+            Platform platform,
+            String accessToken,
+            String refreshToken
+    ) {
+        UserPlatformToken token = userPlatformTokenRepository
+                .findByUserAndPlatform(user, platform)
+                .orElseGet(() -> new UserPlatformToken(user, platform));
+
+        token.updateTokens(accessToken, refreshToken);
+
+        userPlatformTokenRepository.save(token);
+    }
+
+    public UserPlatformToken getPlatformToken(
             UserEntity user,
             Platform platform
     ) {

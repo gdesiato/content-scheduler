@@ -1,10 +1,12 @@
 package com.scheduler.content_scheduler.integrations.oauth;
 
+import com.scheduler.content_scheduler.post.model.Platform;
+
 import java.util.Map;
 
 public interface OAuthProvider {
 
-    String getPlatform();
+    Platform getPlatform();
     boolean usesPkce();
 
     String buildAuthorizationUrl(String state, String codeChallenge);

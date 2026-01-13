@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:15
     container_name: content-scheduler-postgres
     restart: unless-stopped
     ports:
@@ -10,7 +10,7 @@ services:
     environment:
       POSTGRES_DB: content_scheduler
       POSTGRES_USER: scheduler
-      POSTGRES_PASSWORD: scheduler_pwd
+      POSTGRES_PASSWORD: scheduler
     volumes:
       - pgdata:/var/lib/postgresql/data
 

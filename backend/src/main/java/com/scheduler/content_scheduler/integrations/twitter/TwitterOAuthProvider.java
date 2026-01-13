@@ -1,6 +1,7 @@
 package com.scheduler.content_scheduler.integrations.twitter;
 
 import com.scheduler.content_scheduler.integrations.oauth.OAuthProvider;
+import com.scheduler.content_scheduler.post.model.Platform;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -16,8 +17,8 @@ public class TwitterOAuthProvider implements OAuthProvider {
     }
 
     @Override
-    public String getPlatform() {
-        return "twitter";
+    public Platform getPlatform() {
+        return Platform.TWITTER;
     }
 
     @Override
