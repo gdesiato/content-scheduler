@@ -1,4 +1,6 @@
-# Ignore Maven target directories
+# Maven / Gradle build output
+target/
+backend/target/
 /backend/target/
 
 # Ignore IDE-specific files
