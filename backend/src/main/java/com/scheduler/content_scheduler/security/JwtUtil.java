@@ -1,76 +1,63 @@
 package com.scheduler.content_scheduler.security;
 
-import io.github.cdimascio.dotenv.Dotenv;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 import java.util.List;
 
 @Component
 public class JwtUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);
+    private static final long JWT_EXPIRATION_MS = 1000L * 60 * 60 * 10;
 
-    private final String SECRET_KEY;
+    private final Key signingKey;
 
-    public JwtUtil() {
-        Dotenv dotenv = Dotenv.configure().load();
-        this.SECRET_KEY = dotenv.get("JWT_SECRET_KEY");
-
-        if (this.SECRET_KEY == null || this.SECRET_KEY.isEmpty()) {
-            throw new IllegalArgumentException("JWT_SECRET_KEY is not defined in the .env file");
+    public JwtUtil(@Value("${jwt.secret.key}") String secret) {
+        if (secret == null || secret.length() < 32) {
+            throw new IllegalStateException(
+                    "JWT secret key must be at least 32 characters (256 bits for HS256)"
+            );
         }
-        log.info("Loaded JWT Secret Key: {}", this.SECRET_KEY);
+        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateToken(String username) {
-        return Jwts.builder()
-                .setSubject(username)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes())
-                .compact();
-    }
-
-    public String generateTokenWithRoles(String username, List<String> roles) {
+    public String generateToken(String username, List<String> roles) {
         return Jwts.builder()
                 .setSubject(username)
                 .claim("roles", roles)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10))
-                .signWith(SignatureAlgorithm.HS256, SECRET_KEY.getBytes())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + JWT_EXPIRATION_MS))
+                .signWith(signingKey, SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String extractUsername(String token) {
+    public Claims extractClaims(String token) {
         return Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY.getBytes())
+                .setSigningKey(signingKey)
                 .build()
                 .parseClaimsJws(token)
-                .getBody()
-                .getSubject();
+                .getBody();
     }
 
-    public Boolean isTokenExpired(String token) {
-        Date expiration = Jwts.parserBuilder()
-                .setSigningKey(SECRET_KEY.getBytes())
-                .build()
-                .parseClaimsJws(token)
-                .getBody()
-                .getExpiration();
-        return expiration.before(new Date());
+    public String extractUsername(String token) {
+        return extractClaims(token).getSubject();
     }
 
-    public Boolean validateToken(String token, String username) {
-        String extractedUsername = extractUsername(token);
-        return (extractedUsername.equals(username) && !isTokenExpired(token));
-    }
-
-    public String getSecretKey() {
-        return SECRET_KEY;
+    public boolean isTokenValid(String token, String username) {
+        try {
+            Claims claims = extractClaims(token);
+            return claims.getSubject().equals(username)
+                    && claims.getExpiration().after(new Date());
+        } catch (JwtException | IllegalArgumentException e) {
+            return false;
+        }
     }
 }
