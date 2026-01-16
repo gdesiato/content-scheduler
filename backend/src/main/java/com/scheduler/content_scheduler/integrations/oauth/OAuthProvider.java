@@ -17,4 +17,7 @@ public interface OAuthProvider {
             String code,
             String codeVerifier
     );
+
+    String getClientId();
+    String getClientSecret();
 }

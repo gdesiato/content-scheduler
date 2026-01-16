@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/authenticate").permitAll()
+                        .requestMatchers("/auth/**").authenticated()
                         .requestMatchers("/api/users").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
@@ -67,4 +67,3 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 }
-

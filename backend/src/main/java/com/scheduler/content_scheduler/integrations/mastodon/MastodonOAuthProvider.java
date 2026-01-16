@@ -89,6 +89,16 @@ public class MastodonOAuthProvider implements OAuthProvider {
         return params;
     }
 
+    @Override
+    public String getClientId() {
+        return "";
+    }
+
+    @Override
+    public String getClientSecret() {
+        return "";
+    }
+
     private String getInstanceBaseUrl() {
         return "https://mastodon.social";
     }

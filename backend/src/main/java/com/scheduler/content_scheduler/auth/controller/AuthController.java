@@ -6,6 +6,9 @@ import com.scheduler.content_scheduler.auth.service.AuthStateService;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthTokenService;
 import com.scheduler.content_scheduler.post.model.Platform;
 import com.scheduler.content_scheduler.user.service.UserTokenService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import com.scheduler.content_scheduler.security.PkceUtil;
@@ -19,6 +22,8 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     private final Map<Platform, OAuthProvider> providers;
     private final AuthStateService authStateService;
@@ -66,17 +71,40 @@ public class AuthController {
 
         authStateService.storeState(state, codeVerifier);
 
+        log.info(
+                "OAuth AUTHORIZE platform={} state={} pkce={} codeVerifierPresent={}",
+                platform,
+                state,
+                provider.usesPkce(),
+                codeVerifier != null
+        );
+
         String url = provider.buildAuthorizationUrl(state, codeChallenge);
+        log.info("Redirecting to OAuth provider URL={}", url);
+
         return new RedirectView(url);
     }
+
 
     @GetMapping("/{platform}/callback")
     public String callback(
             @PathVariable Platform platform,
             @RequestParam(required = false) String code,
             @RequestParam(required = false) String state,
-            @RequestParam(required = false) String error
+            @RequestParam(required = false) String error,
+            HttpServletRequest request
     ) throws IOException {
+
+        log.info(
+                "OAuth CALLBACK hit platform={} query={}",
+                platform,
+                request.getQueryString()
+        );
+
+        log.info(
+                "OAuth CALLBACK params code={} state={} error={}",
+                code, state, error
+        );
 
         if (error != null) {
             throw new RuntimeException("OAuth error: " + error);
@@ -98,5 +126,4 @@ public class AuthController {
 
         return "Authentication successful. You may close this window.";
     }
-
 }

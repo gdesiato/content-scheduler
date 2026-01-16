@@ -47,7 +47,7 @@ public class AuthenticationController {
                     .map(GrantedAuthority::getAuthority)
                     .toList();
 
-            String token = jwtUtil.generateTokenWithRoles(request.username(), roles);
+            String token = jwtUtil.generateToken(request.username(), roles);
 
             return new AuthResponseDTO(token);
 

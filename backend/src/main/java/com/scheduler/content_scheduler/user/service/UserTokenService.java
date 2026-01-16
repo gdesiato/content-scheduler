@@ -20,8 +20,18 @@ public class UserTokenService {
     public void persistTokens(Platform platform, JsonNode token) {
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (!(auth.getPrincipal() instanceof UserDetails userDetails)) {
+
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getPrincipal() instanceof String) {
             throw new IllegalStateException("User not authenticated");
+        }
+
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+
+        UserEntity user = userService.findByUsername(userDetails.getUsername());
+
+        if (user == null) {
+            throw new IllegalStateException("Authenticated user not found");
         }
 
         JsonNode accessTokenNode = token.get("access_token");
@@ -30,8 +40,6 @@ public class UserTokenService {
         }
 
         JsonNode refreshTokenNode = token.get("refresh_token");
-
-        UserEntity user = userService.findByUsername(userDetails.getUsername());
 
         userService.savePlatformToken(
                 user,
@@ -55,4 +63,3 @@ public class UserTokenService {
                 .getInstanceUrl();
     }
 }
-

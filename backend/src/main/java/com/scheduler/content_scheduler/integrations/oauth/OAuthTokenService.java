@@ -9,6 +9,8 @@ import okhttp3.Response;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 
 @Service
 public class OAuthTokenService {
@@ -43,4 +45,5 @@ public class OAuthTokenService {
             return mapper.readTree(response.body().string());
         }
     }
+
 }
