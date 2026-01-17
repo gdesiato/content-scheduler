@@ -4,7 +4,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -29,9 +28,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        return path.startsWith("/api/auth/")
+                || (path.startsWith("/auth/") && path.endsWith("/callback"));
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    @NonNull HttpServletResponse response,
-                                    @NonNull FilterChain filterChain)
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
         final String authHeader = request.getHeader("Authorization");
@@ -42,9 +48,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             try {
                 String username = jwtUtil.extractUsername(token);
 
-                if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                if (username != null &&
+                        SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                    UserDetails userDetails =
+                            userDetailsService.loadUserByUsername(username);
 
                     if (jwtUtil.isTokenValid(token, userDetails.getUsername())) {
                         UsernamePasswordAuthenticationToken authentication =
@@ -53,17 +61,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         null,
                                         userDetails.getAuthorities()
                                 );
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request)
+                        authentication.setDetails(
+                                new WebAuthenticationDetailsSource()
+                                        .buildDetails(request)
                         );
                         SecurityContextHolder.getContext()
                                 .setAuthentication(authentication);
                     }
                 }
             } catch (JwtException e) {
-                // Invalid token → ignore, continue filter chain
+                // Invalid token → ignore and continue
             }
         }
 
         filterChain.doFilter(request, response);
     }
 }
+
