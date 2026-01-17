@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -37,7 +38,7 @@ public class UserService {
                 .toList();
     }
 
-    public UserResponseDTO getUserById(Long id) {
+    public UserResponseDTO getUserById(UUID id) {
         UserEntity user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException(String.format("User with ID %d not found.", id)));
         return UserMapper.toDTO(user);
@@ -58,6 +59,15 @@ public class UserService {
                 );
     }
 
+    public UserEntity findById(UUID id) {
+        return userRepository.findById(id)
+                .orElseThrow(() ->
+                        new UserNotFoundException(
+                                String.format("User with id %s not found.", id)
+                        )
+                );
+    }
+
     public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
         UserEntity user = UserMapper.toEntity(userRequestDTO);
         if (user.getPassword() != null && !user.getPassword().isEmpty()) {
@@ -67,7 +77,7 @@ public class UserService {
         return UserMapper.toDTO(savedUser);
     }
 
-    public UserResponseDTO updateUser(long id, UserRequestDTO updatedUserData) {
+    public UserResponseDTO updateUser(UUID id, UserRequestDTO updatedUserData) {
 
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
@@ -85,7 +95,7 @@ public class UserService {
         return UserMapper.toDTO(updatedUser);
     }
 
-    public void deleteUserById(Long id) {
+    public void deleteUserById(UUID id) {
         UserEntity existingUser = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
 

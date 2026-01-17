@@ -1,41 +1,34 @@
 package com.scheduler.content_scheduler.auth.service;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
 import org.springframework.stereotype.Service;
 
-import java.security.SecureRandom;
-import java.util.Base64;
-import java.util.concurrent.TimeUnit;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthStateService {
 
-    private final Cache<String, String> stateCache = Caffeine.newBuilder()
-            .expireAfterWrite(10, TimeUnit.MINUTES)
-            .build();
+    private final Map<String, OAuthStateData> states = new ConcurrentHashMap<>();
 
     public String generateState() {
-        return java.util.UUID.randomUUID().toString();
+        return UUID.randomUUID().toString();
     }
 
     public String generateCodeVerifier() {
-        byte[] bytes = new byte[32];
-        new SecureRandom().nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+        return UUID.randomUUID().toString();
     }
 
-    public void storeState(String state, String codeVerifier) {
-        if (codeVerifier != null) {
-            stateCache.put(state, codeVerifier);
-        }
+    public void storeState(String state, String codeVerifier, UUID userId) {
+        states.put(state, new OAuthStateData(codeVerifier, userId));
     }
 
-    public String getAndRemoveCodeVerifier(String state) {
-        String verifier = stateCache.getIfPresent(state);
-        if (verifier != null) {
-            stateCache.invalidate(state); // Ensure one-time use
+    public OAuthStateData consumeState(String state) {
+        OAuthStateData data = states.remove(state);
+        if (data == null) {
+            throw new IllegalStateException("Invalid or expired OAuth state");
         }
-        return verifier;
+        return data;
     }
 }
+

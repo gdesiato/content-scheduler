@@ -17,37 +17,30 @@ public class UserTokenService {
         this.userService = userService;
     }
 
-    public void persistTokens(Platform platform, JsonNode token) {
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-
-        if (auth == null || !auth.isAuthenticated()
-                || auth.getPrincipal() instanceof String) {
-            throw new IllegalStateException("User not authenticated");
-        }
-
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
-
-        UserEntity user = userService.findByUsername(userDetails.getUsername());
-
-        if (user == null) {
-            throw new IllegalStateException("Authenticated user not found");
-        }
-
+    public void persistTokensForUser(
+            UserEntity user,
+            Platform platform,
+            JsonNode token
+    ) {
+        // access_token (required)
         JsonNode accessTokenNode = token.get("access_token");
         if (accessTokenNode == null || accessTokenNode.isNull()) {
             throw new IllegalStateException("OAuth response missing access_token");
         }
+        String accessToken = accessTokenNode.asText();
 
+        // refresh_token (optional)
+        String refreshToken = null;
         JsonNode refreshTokenNode = token.get("refresh_token");
+        if (refreshTokenNode != null && !refreshTokenNode.isNull()) {
+            refreshToken = refreshTokenNode.asText();
+        }
 
         userService.savePlatformToken(
                 user,
                 platform,
-                accessTokenNode.asText(),
-                refreshTokenNode != null && !refreshTokenNode.isNull()
-                        ? refreshTokenNode.asText()
-                        : null
+                accessToken,
+                refreshToken
         );
     }
 

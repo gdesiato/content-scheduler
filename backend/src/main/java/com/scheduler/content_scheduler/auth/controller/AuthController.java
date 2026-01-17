@@ -1,14 +1,20 @@
 package com.scheduler.content_scheduler.auth.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.scheduler.content_scheduler.auth.service.OAuthStateData;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthProvider;
 import com.scheduler.content_scheduler.auth.service.AuthStateService;
 import com.scheduler.content_scheduler.integrations.oauth.OAuthTokenService;
 import com.scheduler.content_scheduler.post.model.Platform;
+import com.scheduler.content_scheduler.user.model.UserEntity;
+import com.scheduler.content_scheduler.user.service.UserService;
 import com.scheduler.content_scheduler.user.service.UserTokenService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 import com.scheduler.content_scheduler.security.PkceUtil;
@@ -16,6 +22,7 @@ import com.scheduler.content_scheduler.security.PkceUtil;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -28,13 +35,14 @@ public class AuthController {
     private final Map<Platform, OAuthProvider> providers;
     private final AuthStateService authStateService;
     private final OAuthTokenService tokenService;
+    private final UserService userService;
     private final UserTokenService userTokenService;
 
 
     public AuthController(
             List<OAuthProvider> authProviders,
             AuthStateService authStateService,
-            OAuthTokenService tokenService,
+            OAuthTokenService tokenService, UserService userService,
             UserTokenService userTokenService
     ) {
         this.providers = authProviders.stream()
@@ -44,6 +52,7 @@ public class AuthController {
                 ));
         this.authStateService = authStateService;
         this.tokenService = tokenService;
+        this.userService = userService;
         this.userTokenService = userTokenService;
     }
 
@@ -58,6 +67,17 @@ public class AuthController {
     @GetMapping("/{platform}/authorize")
     public RedirectView authorize(@PathVariable Platform platform) {
 
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth == null || !auth.isAuthenticated()
+                || auth.getPrincipal() instanceof String) {
+            throw new IllegalStateException("User must be logged in to connect OAuth");
+        }
+
+        UserDetails userDetails = (UserDetails) auth.getPrincipal();
+        UserEntity user = userService.findByUsername(userDetails.getUsername());
+        UUID userId = user.getId();
+
         OAuthProvider provider = getProvider(platform);
 
         String state = authStateService.generateState();
@@ -65,26 +85,15 @@ public class AuthController {
                 ? authStateService.generateCodeVerifier()
                 : null;
 
+        authStateService.storeState(state, codeVerifier, userId);
+
         String codeChallenge = codeVerifier != null
                 ? PkceUtil.generateCodeChallenge(codeVerifier)
                 : null;
 
-        authStateService.storeState(state, codeVerifier);
-
-        log.info(
-                "OAuth AUTHORIZE platform={} state={} pkce={} codeVerifierPresent={}",
-                platform,
-                state,
-                provider.usesPkce(),
-                codeVerifier != null
-        );
-
         String url = provider.buildAuthorizationUrl(state, codeChallenge);
-        log.info("Redirecting to OAuth provider URL={}", url);
-
         return new RedirectView(url);
     }
-
 
     @GetMapping("/{platform}/callback")
     public String callback(
@@ -115,14 +124,16 @@ public class AuthController {
 
         OAuthProvider provider = getProvider(platform);
 
-        String codeVerifier = authStateService.getAndRemoveCodeVerifier(state);
-        if (provider.usesPkce() && codeVerifier == null) {
-            throw new RuntimeException("Invalid or expired state");
-        }
+        // 🔑 Restore OAuth state (THIS is the key change)
+        OAuthStateData stateData = authStateService.consumeState(state);
+
+        String codeVerifier = stateData.codeVerifier();
+        UUID userId = stateData.userId();
+        UserEntity user = userService.findById(userId);
 
         JsonNode token = tokenService.exchangeCode(provider, code, codeVerifier);
 
-        userTokenService.persistTokens(platform, token);
+        userTokenService.persistTokensForUser(user, platform, token);
 
         return "Authentication successful. You may close this window.";
     }
