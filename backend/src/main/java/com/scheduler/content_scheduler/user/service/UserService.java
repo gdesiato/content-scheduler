@@ -10,6 +10,8 @@ import com.scheduler.content_scheduler.user.model.UserPlatformToken;
 import com.scheduler.content_scheduler.user.repository.UserPlatformTokenRepository;
 import com.scheduler.content_scheduler.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -128,6 +130,24 @@ public class UserService {
                         new IllegalStateException(
                                 "No token for platform " + platform
                         )
+                );
+    }
+
+    public UserEntity fromAuthentication(Authentication auth) {
+
+        if (auth == null || !auth.isAuthenticated()) {
+            throw new IllegalStateException("User not authenticated");
+        }
+
+        Object principal = auth.getPrincipal();
+
+        if (!(principal instanceof UserDetails userDetails)) {
+            throw new IllegalStateException("Invalid authentication principal");
+        }
+
+        return userRepository.findByUsername(userDetails.getUsername())
+                .orElseThrow(() ->
+                        new IllegalStateException("Authenticated user not found")
                 );
     }
 }
